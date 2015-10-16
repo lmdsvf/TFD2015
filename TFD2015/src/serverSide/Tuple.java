@@ -1,8 +1,8 @@
 package serverSide;
 
-import message.Message;
+import message.ClientMessage;
 
 public class Tuple {
 	private int op_number;
-	private Message message;
+	private ClientMessage message; //ver o tipo depois...
 }

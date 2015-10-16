@@ -3,7 +3,7 @@ package serverSide;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import message.Message;
+import message.ClientMessage;
 import clientSide.Client;
 
 public class ServerState {
@@ -12,7 +12,7 @@ public class ServerState {
 	private int view_number = 0;
 	private Status status;
 	private int op_number = 0;
-	private ArrayList<Message> log;
+	private ArrayList<ClientMessage> log; //ver depois o tipo...
 	private int commit_number;
 	private HashMap<Client, Tuple> clientTable;
 }
