@@ -26,6 +26,7 @@ public class Server {
 		int mod = state.getView_number() % state.getConfiguration().size();
 		if (mod == state.getReplica_number()) {
 			new StartServicingClient().start();
+			new ConnectToServers().start();
 			System.out.println("Primário está Disponivel");
 		} else {
 			new KeepingPortOpen().start();
