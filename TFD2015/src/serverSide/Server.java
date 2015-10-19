@@ -28,7 +28,7 @@ public class Server {
 			new StartServicingClient().start();
 			System.out.println("Primário está Disponivel");
 		} else {
-
+			new KeepingPortOpen().start();
 		}
 
 	}
