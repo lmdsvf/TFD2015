@@ -15,4 +15,15 @@ public class ServerState {
 	private ArrayList<ClientMessage> log; //ver depois o tipo...
 	private int commit_number;
 	private HashMap<Client, Tuple> clientTable;
+	
+	public ServerState(){
+		configuration = new ArrayList<String>();
+		configuration.add("10.101.149.43");
+		configuration.add("10.101.149.42");
+		configuration.add("10.101.149.41");
+		replica_number = configuration.indexOf("10.101.149.43");
+		status = Status.NORMAL;
+		log = new ArrayList<ClientMessage>();
+		clientTable = new HashMap<Client, Tuple>(); 
+	}
 }

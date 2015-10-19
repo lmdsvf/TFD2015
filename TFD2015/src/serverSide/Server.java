@@ -3,8 +3,10 @@ package serverSide;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 import message.ClientMessage;
 import message.MessageType;
@@ -16,6 +18,7 @@ public class Server {
 
 	public Server() {
 		// TODO Auto-generated constructor stub
+		new ServerState();
 		new StartServicing().start();
 	}
 
