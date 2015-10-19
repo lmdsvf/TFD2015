@@ -1,6 +1,8 @@
 package message;
 
-public class ClientMessage {
+import java.io.Serializable;
+
+public class ClientMessage implements Serializable{
 	private MessageType type;
 	private int view_number;
 	private Operation op;
@@ -22,5 +24,34 @@ public class ClientMessage {
 		this.s = s;
 		this.x = x;
 	}
+
+	public MessageType getType() {
+		return type;
+	}
+
+	public int getView_number() {
+		return view_number;
+	}
+
+	public Operation getOp() {
+		return op;
+	}
+
+	public int getC() {
+		return c;
+	}
+
+	public int getS() {
+		return s;
+	}
+
+	public int getV() {
+		return v;
+	}
+
+	public int getX() {
+		return x;
+	}
+	
 	
 }
