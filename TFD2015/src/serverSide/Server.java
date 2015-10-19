@@ -32,7 +32,6 @@ public class Server {
 		} else {
 			new KeepingPortOpen().start();
 		}
-
 	}
 
 	class KeepingPortOpen extends Thread {
@@ -54,7 +53,6 @@ public class Server {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
 		}
 	}
 
