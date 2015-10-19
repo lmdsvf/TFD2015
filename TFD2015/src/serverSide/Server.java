@@ -42,7 +42,7 @@ public class Server {
 				ss2 = new ServerSocket(PORTS);
 				System.out.println("ServerSocket activa");
 				while (true) { // espera q venha clients
-					Socket socket = serverSocket.accept(); //
+					Socket socket = ss2.accept(); //
 					ObjectOutputStream out = new ObjectOutputStream(
 							socket.getOutputStream());
 					ObjectInputStream in = new ObjectInputStream(
