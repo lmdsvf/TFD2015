@@ -16,6 +16,7 @@ public class Server {
 	public static final int PORT = 4567;
 	public static final int PORTS = 4568;
 	private ServerSocket serverSocket;
+	private ServerSocket ss2;
 	private ServerState state;
 	private HashMap<String, DealWithServers> backupServers;
 
@@ -38,7 +39,7 @@ public class Server {
 		@Override
 		public void run() {
 			try {
-				serverSocket = new ServerSocket(PORTS);
+				ss2 = new ServerSocket(PORTS);
 				System.out.println("ServerSocket activa");
 				while (true) { // espera q venha clients
 					Socket socket = serverSocket.accept(); //
