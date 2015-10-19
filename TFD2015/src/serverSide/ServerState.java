@@ -20,7 +20,7 @@ public class ServerState {
 		configuration = new ArrayList<String>();
 		configuration.add("193.137.143.40");
 		configuration.add("193.137.142.16");
-		//configuration.add("10.101.149.41");
+		//configuration.add("10.101.149.41"); 
 		replica_number = configuration.indexOf("193.137.143.40");
 		status = Status.NORMAL;
 		log = new ArrayList<ClientMessage>();
