@@ -8,8 +8,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-
-import serverSide.Server.ConnectToServers.DealWithServers;
 import message.ClientMessage;
 import message.MessageType;
 import message.ServerMessage;
@@ -29,8 +27,33 @@ public class Server {
 		if (mod == state.getReplica_number()) {
 			new StartServicingClient().start();
 			System.out.println("Primário está Disponivel");
+		} else {
+
 		}
 
+	}
+
+	class KeepingPortOpen extends Thread {
+		@Override
+		public void run() {
+			try {
+				serverSocket = new ServerSocket(PORTS);
+				System.out.println("ServerSocket activa");
+				while (true) { // espera q venha clients
+					Socket socket = serverSocket.accept(); //
+					ObjectOutputStream out = new ObjectOutputStream(
+							socket.getOutputStream());
+					ObjectInputStream in = new ObjectInputStream(
+							socket.getInputStream());
+					new DealWithServers(out, in).start();
+					System.out.println("novo cliente");
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
 	}
 
 	class ConnectToServers extends Thread {
@@ -69,48 +92,6 @@ public class Server {
 			 */
 		}
 
-		class DealWithServers extends Thread {
-			private ObjectOutputStream out;
-			private ObjectInputStream in;
-
-			public DealWithServers(ObjectOutputStream out, ObjectInputStream in) {
-				this.out = out;
-				this.in = in;
-				// TODO Auto-generated constructor stub
-			}
-			public ObjectOutputStream getOut() {
-				return out;
-			}
-			public ObjectInputStream getIn() {
-				return in;
-			}
-
-			@Override
-			public void run() {
-				while (true) {
-					try {
-						ServerMessage msg = (ServerMessage) in.readObject();
-						switch (msg.getType()) {
-						case PREPARE:
-							System.err.println("Recebeu pah!!!!!!!");
-							break;
-
-						default:
-							break;
-						}
-
-					} catch (ClassNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-				}
-			}
-
-		}
 	}
 
 	class StartServicingClient extends Thread {
@@ -159,11 +140,14 @@ public class Server {
 						ClientMessage msg = (ClientMessage) in.readObject();
 						switch (msg.getType()) {
 						case REQUEST:
-							/*ClientMessage newMsg = new ClientMessage(
-									MessageType.REPLY, 1, 1, 5);
-							out.writeObject(newMsg);*/
-							ServerMessage sm= new ServerMessage(MessageType.PREPARE,1,msg, 1, 0);
-							for(DealWithServers ds: backupServers.values() ){
+							/*
+							 * ClientMessage newMsg = new ClientMessage(
+							 * MessageType.REPLY, 1, 1, 5);
+							 * out.writeObject(newMsg);
+							 */
+							ServerMessage sm = new ServerMessage(
+									MessageType.PREPARE, 1, msg, 1, 0);
+							for (DealWithServers ds : backupServers.values()) {
 								ds.getOut().writeObject(sm);
 							}
 							System.err.println("Enviou todos!");
