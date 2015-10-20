@@ -1,8 +1,10 @@
 package message;
 
+import java.io.Serializable;
+
 import clientSide.OperationType;
 
-public class Operation {
+public class Operation implements Serializable{
 	
 	private int a;
 	private int b;
