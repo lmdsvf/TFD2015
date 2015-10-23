@@ -1,9 +1,12 @@
 package serverSide;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 
 import message.ClientMessage;
 import clientSide.Client;
@@ -17,14 +20,17 @@ public class ServerState {
 	private ArrayList<ClientMessage> log; // ver depois o tipo...
 	private int commit_number;
 	private HashMap<Client, Tuple> clientTable;
+	private Properties properties;
+	private static final int NUMBEROFIPS = 5;
 
 	public ServerState() {
 		try {
+			properties = new Properties();
+			properties.load(new FileReader("Configuration.txt"));
 			configuration = new ArrayList<String>();
-			configuration.add("127.0.0.1");
-			configuration.add("192.168.1.3");
-			configuration.add("192.168.1.4");
-			// configuration.add("10.101.149.41");
+			for (int i = 0; i < NUMBEROFIPS; i++) {
+				configuration.add(properties.get("IP" + i).toString());
+			}
 			configuration.sort(null);
 			replica_number = configuration.indexOf(InetAddress.getLocalHost()
 					.getHostAddress().toString());
@@ -32,6 +38,9 @@ public class ServerState {
 			log = new ArrayList<ClientMessage>();
 			clientTable = new HashMap<Client, Tuple>();
 		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
