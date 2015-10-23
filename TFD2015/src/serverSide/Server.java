@@ -3,20 +3,20 @@ package serverSide;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.HashMap;
+
+import network.Network;
 import message.ClientMessage;
 import message.MessageType;
 import message.ServerMessage;
 
 public class Server {
 	public static final int PORT = 4567;
-	public static final int PORTS = 4568;
-	private ServerSocket serverSocket;
-	private ServerSocket ss2;
+	public static final int PORT_S = 4568;
+	private Network server;
+	private Network serversSockets;
 	private ServerState state;
 	private HashMap<String, DealWithServers> backupServers;
 
@@ -28,7 +28,7 @@ public class Server {
 		if (mod == state.getReplica_number()) {
 			new StartServicingClient().start();
 			new ConnectToServers().start();
-			System.out.println("Primário está Disponivel");
+			System.out.println("Primario esta Disponivel");
 		} else {
 			new KeepingPortOpen().start();
 		}
@@ -99,7 +99,8 @@ public class Server {
 		@Override
 		public void run() {
 			try {
-				serverSocket = new ServerSocket(PORT);
+				
+				server = new Network(PORT);
 				System.out.println("ServerSocket activa");
 				while (true) { // espera q venha clients
 					Socket socket = serverSocket.accept(); //

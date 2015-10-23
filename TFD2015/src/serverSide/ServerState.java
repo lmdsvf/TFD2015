@@ -21,8 +21,9 @@ public class ServerState {
 	public ServerState() {
 		try {
 			configuration = new ArrayList<String>();
-			configuration.add("193.137.143.40");
-			configuration.add("192.168.56.1");
+			configuration.add("127.0.0.1");
+			configuration.add("192.168.1.3");
+			configuration.add("192.168.1.4");
 			// configuration.add("10.101.149.41");
 			configuration.sort(null);
 			replica_number = configuration.indexOf(InetAddress.getLocalHost()
