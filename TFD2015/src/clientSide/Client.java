@@ -1,10 +1,15 @@
 package clientSide;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Properties;
 
 import javax.swing.JOptionPane;
 
@@ -21,9 +26,24 @@ public class Client {
 	private String serverAddress;
 
 	public Client() {
+		readConfiguration();
 		// TODO Auto-generated constructor stub
 		serverAddress = JOptionPane.showInputDialog("IP").toString();
-		connection();
+		// connection();
+	}
+
+	private void readConfiguration() {
+		Properties properties = new Properties();
+		try {
+			properties.load(new FileReader("Configuration.txt"));
+			System.out.println(properties.getProperty("IP0"));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void connection() {
