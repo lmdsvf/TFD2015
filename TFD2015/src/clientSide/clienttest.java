@@ -11,7 +11,7 @@ public class clienttest {
 
 	public static void main(String[] args) {
 
-		Network net = new Network("192.168.1.3", 4567);
+		Network net = new Network("192.168.1.3", 4988);
 		for (int i = 0; i < 1; i++) {
 			Message a;
 			try {
