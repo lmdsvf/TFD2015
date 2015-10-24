@@ -34,7 +34,8 @@ public class Network {
 		getProperties();
 
 		try {
-			IPaddress = /*InetAddress.getByName(address);*/InetAddress.getByAddress(address.getBytes());
+			byte [] b = new byte[] {(byte)192,(byte)168,(byte)1,(byte)3};
+			IPaddress = /*InetAddress.getByName(address);*/InetAddress.getByAddress(b);
 			System.out.println(IPaddress.getHostAddress());
 			socket = new DatagramSocket();
 		} catch (UnknownHostException e) {
