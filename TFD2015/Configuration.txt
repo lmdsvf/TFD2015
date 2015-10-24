@@ -1,6 +1,10 @@
-IP0=192.168.1.2
-IP1=192.168.1.5
-IP2=192.168.1.4
-PClient=4988
-PServer=4989
+IP0=192.168.1.2
+IP1=192.168.1.5
+IP2=192.168.1.4
+PClient=4988
+PServer=4989
+<<<<<<< HEAD
+T=10000
+=======
 TimeOut=1000
+>>>>>>> branch 'master' of https://github.com/lmdsvf/TFD2015.git

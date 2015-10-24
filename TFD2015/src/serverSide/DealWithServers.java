@@ -1,47 +1,33 @@
 package serverSide;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import network.Network;
+import message.Message;
+import message.MessageType;
 
-import message.ServerMessage;
 
 public class DealWithServers extends Thread {
-	private ObjectOutputStream out;
-	private ObjectInputStream in;
+	private Network net;
 
-	public DealWithServers(ObjectOutputStream out, ObjectInputStream in) {
-		this.out = out;
-		this.in = in;
-		// TODO Auto-generated constructor stub
+	public DealWithServers(Network net) {
+		this.net = net;
 	}
-	public ObjectOutputStream getOut() {
-		return out;
-	}
-	public ObjectInputStream getIn() {
-		return in;
+	public Network getNetwork() {
+		return net;
 	}
 
 	@Override
 	public void run() {
 		while (true) {
-			try {
-				ServerMessage msg = (ServerMessage) in.readObject();
-				switch (msg.getType()) {
-				case PREPARE:
-					System.err.println("Recebeu pah!!!!!!!");
-					break;
+			Message msg = net.receive();
+			switch (msg.getType()) {
+			case PREPARE:
+				// verificar se o op number 
+				System.err.println("Recebeu pah!!!!!!!");
+				//Message pOK = new Message(MessageType.PREPARE_OK,);
+				break;
 
-				default:
-					break;
-				}
-
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			default:
+				break;
 			}
 
 		}

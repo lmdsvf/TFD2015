@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 
-import message.ClientMessage;
+import message.Message;
 import clientSide.Client;
 
 public class ServerState {
@@ -17,9 +17,11 @@ public class ServerState {
 	private int view_number = 0;
 	private Status status;
 	private int op_number = 0;
-	private ArrayList<ClientMessage> log; // ver depois o tipo...
+	private ArrayList<Message> log; // ver depois o tipo...
 	private int commit_number;
-	private HashMap<Client, Tuple> clientTable;
+
+	private HashMap<String, Tuple> clientTable;
+
 	private Properties properties;
 	private static final int NUMBEROFIPS = 5;
 
@@ -28,6 +30,11 @@ public class ServerState {
 			properties = new Properties();
 			properties.load(new FileReader("Configuration.txt"));
 			configuration = new ArrayList<String>();
+			configuration.add("127.0.0.1");
+			configuration.add("192.168.1.3");
+			configuration.add("192.168.1.4");
+			// configuration.add("10.101.149.41");
+			//configuration.sort(null);
 			for (int i = 0; i < NUMBEROFIPS; i++) {
 				configuration.add(properties.get("IP" + i).toString());
 			}
@@ -35,8 +42,8 @@ public class ServerState {
 			replica_number = configuration.indexOf(InetAddress.getLocalHost()
 					.getHostAddress().toString());
 			status = Status.NORMAL;
-			log = new ArrayList<ClientMessage>();
-			clientTable = new HashMap<Client, Tuple>();
+			log = new ArrayList<Message>();
+			clientTable = new HashMap<String, Tuple>();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -87,11 +94,11 @@ public class ServerState {
 		this.op_number = op_number;
 	}
 
-	public ArrayList<ClientMessage> getLog() {
+	public ArrayList<Message> getLog() {
 		return log;
 	}
 
-	public void setLog(ArrayList<ClientMessage> log) {
+	public void setLog(ArrayList<Message> log) {
 		this.log = log;
 	}
 
@@ -103,11 +110,11 @@ public class ServerState {
 		this.commit_number = commit_number;
 	}
 
-	public HashMap<Client, Tuple> getClientTable() {
+	public HashMap<String, Tuple> getClientTable() {
 		return clientTable;
 	}
 
-	public void setClientTable(HashMap<Client, Tuple> clientTable) {
+	public void setClientTable(HashMap<String, Tuple> clientTable) {
 		this.clientTable = clientTable;
 	}
 }
