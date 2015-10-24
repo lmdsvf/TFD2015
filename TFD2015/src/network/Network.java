@@ -26,7 +26,7 @@ public class Network {
 	private InetAddress IPaddress;
 	private DatagramSocket socket;
 	private int timeout;
-	
+
 	// client constructor
 	public Network(String address, int port) {
 		receivedData = new byte[BUFFERSIZE];
@@ -34,8 +34,7 @@ public class Network {
 		getProperties();
 
 		try {
-			byte [] b = new byte[] {(byte)192,(byte)168,(byte)1,(byte)3};
-			IPaddress = /*InetAddress.getByName(address);*/InetAddress.getByAddress(b);
+			IPaddress = InetAddress.getByName(address);
 			System.out.println(IPaddress.getHostAddress());
 			socket = new DatagramSocket();
 		} catch (UnknownHostException e) {
@@ -57,8 +56,8 @@ public class Network {
 			e.printStackTrace();
 		}
 	}
-	
-	private void getProperties(){
+
+	private void getProperties() {
 		Properties p = new Properties();
 		try {
 			p.load(new FileReader("Configuration.txt"));
@@ -94,16 +93,17 @@ public class Network {
 		try {
 			socket.setSoTimeout(timeout);
 			socket.receive(receivedPacket);
-			ByteArrayInputStream in = new ByteArrayInputStream(receivedPacket.getData());
+			ByteArrayInputStream in = new ByteArrayInputStream(
+					receivedPacket.getData());
 			ObjectInputStream is = new ObjectInputStream(in);
 
 			returnObject = (Message) is.readObject();
 			in.close();
 			is.close();
-		} catch (SocketTimeoutException e){
+		} catch (SocketTimeoutException e) {
 			return null;
 		} catch (IOException e) {
-			
+
 		} catch (ClassNotFoundException e) {
 			System.err.println("Erro no tipo de mensagem Message!");
 			e.printStackTrace();
@@ -115,12 +115,12 @@ public class Network {
 		}
 		return returnObject;
 	}
-	
-	public InetAddress getIP(){
+
+	public InetAddress getIP() {
 		return IPaddress;
 	}
-	
-	public int getPort(){
+
+	public int getPort() {
 		return port;
 	}
 
