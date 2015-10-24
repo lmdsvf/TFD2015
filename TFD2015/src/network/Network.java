@@ -34,11 +34,11 @@ public class Network {
 		getProperties();
 
 		try {
-			IPaddress = InetAddress.getByName(address);
+			//IPaddress = InetAddress.getByName(address);
 			socket = new DatagramSocket();
-		} catch (UnknownHostException e) {
+		} /*catch (UnknownHostException e) {
 			e.printStackTrace();
-		} catch (SocketException e) {
+		} */catch (SocketException e) {
 			e.printStackTrace();
 		}
 	}
