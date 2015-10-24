@@ -2,7 +2,7 @@ package message;
 
 import java.io.Serializable;
 
-public class Message implements Serializable{
+public class Message implements Serializable {
 	private MessageType type;
 	private int view_number;
 	private Message client_Message;
@@ -11,11 +11,14 @@ public class Message implements Serializable{
 	private int commit_Number;
 	private String result;
 	private String operation;
-	private int client_Id;
+	private String client_Id;// Tem que ser uma String pois o id terá que ser o
+								// IP pois é impossivel fazer ID tipo 1 ou 2 de
+								// máquinas que nem sabemos que nos vão
+								// contactar
 	private int request_Number;
 
 	// Request Message
-	public Message(MessageType request, String op, int c, int s) {
+	public Message(MessageType request, String op, String c, int s) {
 		this.type = request;
 		this.operation = op;
 		this.client_Id = c;
@@ -99,11 +102,11 @@ public class Message implements Serializable{
 		this.operation = operation;
 	}
 
-	public int getClient_Id() {
+	public String getClient_Id() {
 		return client_Id;
 	}
 
-	public void setClient_Id(int client_Id) {
+	public void setClient_Id(String client_Id) {
 		this.client_Id = client_Id;
 	}
 

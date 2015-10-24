@@ -20,7 +20,7 @@ public class StartServicingClient extends Thread {
 		while (true) { // espera q venha clients
 			System.out.println("Waiting for clients...");
 			Message message = server.receive();
-			state.getClientTable().put(server.getIP().toString(), new Tuple());
+			//state.getClientTable().put(server.getIP().toString(), new Tuple());
 			new DealWithClient(message).start();
 		}
 	}
