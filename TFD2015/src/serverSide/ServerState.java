@@ -23,22 +23,23 @@ public class ServerState {
 	private HashMap<String, Tuple> clientTable;
 
 	private Properties properties;
-	private static final int NUMBEROFIPS = 5;
+	private static final int NUMBEROFIPS = 2;
 
 	public ServerState() {
 		try {
 			properties = new Properties();
 			properties.load(new FileReader("Configuration.txt"));
 			configuration = new ArrayList<String>();
-			configuration.add("127.0.0.1");
-			configuration.add("192.168.1.3");
-			configuration.add("192.168.1.4");
+			/*
+			 * configuration.add("127.0.0.1"); configuration.add("192.168.1.3");
+			 * configuration.add("192.168.1.4");
+			 */
 			// configuration.add("10.101.149.41");
-			//configuration.sort(null);
+			// configuration.sort(null);
 			for (int i = 0; i < NUMBEROFIPS; i++) {
 				configuration.add(properties.get("IP" + i).toString());
 			}
-			configuration.sort(null);
+			// configuration.sort(null);
 			replica_number = configuration.indexOf(InetAddress.getLocalHost()
 					.getHostAddress().toString());
 			status = Status.NORMAL;
