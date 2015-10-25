@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -75,6 +76,7 @@ public class Network {
 			byte[] dataSend = outputStream.toByteArray();
 			DatagramPacket sendPacket = new DatagramPacket(dataSend,
 					dataSend.length, IPaddress, port);
+			socket.bind(new InetSocketAddress(IPaddress, port));
 			socket.send(sendPacket);
 			outputStream.close();
 			os.close();
