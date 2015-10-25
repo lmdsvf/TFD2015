@@ -45,10 +45,10 @@ public class Server {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			server = new Network(Integer.parseInt(properties.getProperty("PClient")));
+			server = new Network(Integer.parseInt(properties.getProperty("PServer")));
 			System.out.println("ServerSocket activa");
 			while (true) { // espera q venha clients
-				System.out.println("Waiting for clients...");
+				System.out.println("Waiting for primary...");
 				Message message = server.receive();
 				// state.getClientTable().put(server.getIP().toString(), new
 				// Tuple());
