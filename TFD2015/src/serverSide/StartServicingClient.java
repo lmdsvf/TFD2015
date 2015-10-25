@@ -20,7 +20,7 @@ public class StartServicingClient extends Thread {
 
 	@Override
 	public void run() {
-		Properties properties= new Properties();
+		Properties properties = new Properties();
 		try {
 			properties.load(new FileReader("Configuration.txt"));
 		} catch (FileNotFoundException e) {
@@ -52,47 +52,46 @@ public class StartServicingClient extends Thread {
 
 		@Override
 		public void run() {
-			//if (server.getSocket().isConnected()) {
+			// if (server.getSocket().isConnected()) {
 
-				switch (msg.getType()) {
-				case REQUEST:
-					// send prepare to all backups
-					// Message sm = new Message(MessageType.PREPARE, 1, msg, 1,
-					// 0);
-					// for (DealWithServers ds : backupServers.values()) {
-					// ds.getNetwork().send(sm);
-					// }
+			switch (msg.getType()) {
+			case REQUEST:
+				// send prepare to all backups
+				// Message sm = new Message(MessageType.PREPARE, 1, msg, 1,
+				// 0);
+				// for (DealWithServers ds : backupServers.values()) {
+				// ds.getNetwork().send(sm);
+				// }
 
-					// wait for half the prepare_ok message
-					// int ok = 0;
-					// while(ok < (backupServers.size()/2) + 1){
-					//
-					// ok++;
-					// }
-					Message reply = new Message(MessageType.REPLY, 0,
-							msg.getRequest_Number(), "result");
-					server.send(reply);
-					break;
-				default:
-					break;
-				}
-				/*
-				 * ServerMessage message = (ServerMessage) in.readObject();
-				 * 
-				 * switch (message.getType()) { case CONNECTED: if
-				 * (!maps.contains(message.getSenderNickname())) { clientName =
-				 * message.getSenderNickname();
-				 * 
-				 * maps.addEntry(message.getSenderNickname(), out);
-				 * q.add(message); } else { ClientMessage msg = new
-				 * ClientMessage( ClientSideMessage.Type.ERROR,
-				 * "ja existe esse nome"); out.writeObject(msg); } break; case
-				 * NEW_ORDER: q.add(message); break; default: break; }
-				 */
-//			} else {
-//				System.out.println("Fixe, resultou!");
-//
-//			}
+				// wait for half the prepare_ok message
+				// int ok = 0;
+				// while(ok < (backupServers.size()/2) + 1){
+				//
+				// ok++;
+				// }
+				Message reply = new Message(MessageType.REPLY, 0, msg.getRequest_Number(), "result");
+				server.send(reply);
+				break;
+			default:
+				break;
+			}
+			/*
+			 * ServerMessage message = (ServerMessage) in.readObject();
+			 * 
+			 * switch (message.getType()) { case CONNECTED: if
+			 * (!maps.contains(message.getSenderNickname())) { clientName =
+			 * message.getSenderNickname();
+			 * 
+			 * maps.addEntry(message.getSenderNickname(), out); q.add(message);
+			 * } else { ClientMessage msg = new ClientMessage(
+			 * ClientSideMessage.Type.ERROR, "ja existe esse nome");
+			 * out.writeObject(msg); } break; case NEW_ORDER: q.add(message);
+			 * break; default: break; }
+			 */
+			// } else {
+			// System.out.println("Fixe, resultou!");
+			//
+			// }
 		}
 	}
 }

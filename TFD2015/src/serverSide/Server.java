@@ -1,7 +1,12 @@
 package serverSide;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Properties;
 
+import message.Message;
 import network.Network;
 
 public class Server {
@@ -19,25 +24,34 @@ public class Server {
 			// new ConnectToServers().start();
 			new StartServicingClient(state).start();
 			System.out.println("Primario esta Disponivel");
+		} else {
+			new KeepingPortOpen().start();
 		}
-		// else {
-		// new KeepingPortOpen().start();
-		// }
 	}
 
 	class KeepingPortOpen extends Thread {
+		private Network server;
+
 		@Override
 		public void run() {
-			serversSockets = new Network(PORT_S);
+			Properties properties = new Properties();
+			try {
+				properties.load(new FileReader("Configuration.txt"));
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			server = new Network(Integer.parseInt(properties.getProperty("PClient")));
 			System.out.println("ServerSocket activa");
 			while (true) { // espera q venha clients
-				// Socket socket = serversSockets.accept(); //
-				// ObjectOutputStream out = new ObjectOutputStream(
-				// socket.getOutputStream());
-				// ObjectInputStream in = new ObjectInputStream(
-				// socket.getInputStream());
-				// new DealWithServers(out, in).start();
-				// System.out.println("novo cliente");
+				System.out.println("Waiting for clients...");
+				Message message = server.receive();
+				// state.getClientTable().put(server.getIP().toString(), new
+				// Tuple());
+				new DealWithServersTest(message).start();
 			}
 		}
 	}
