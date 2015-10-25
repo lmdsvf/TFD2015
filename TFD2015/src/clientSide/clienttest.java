@@ -39,7 +39,6 @@ public class clienttest {
 			}
 			Message msgReceived = (Message) net.receive();
 			System.out.println("Lado Cliente: " + msgReceived.getResult());
-			net.getSocket().close();
 		}
 	}
 }
