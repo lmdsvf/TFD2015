@@ -32,10 +32,8 @@ public class Network {
 		receivedData = new byte[BUFFERSIZE];
 		this.port = port;
 		getProperties();
-
 		try {
-			byte [] b = new byte[] {(byte)192,(byte)168,(byte)1,(byte)3};
-			IPaddress = InetAddress.getByAddress(b);//InetAddress.getByName(address);
+			IPaddress = InetAddress.getByName(address);
 			System.out.println(IPaddress.getHostAddress());
 			socket = new DatagramSocket();
 		} catch (UnknownHostException e) {
@@ -50,7 +48,6 @@ public class Network {
 		receivedData = new byte[BUFFERSIZE];
 		this.port = port;
 		getProperties();
-
 		try {
 			socket = new DatagramSocket(port);
 		} catch (SocketException e) {
@@ -115,6 +112,22 @@ public class Network {
 			port = receivedPacket.getPort();
 		}
 		return returnObject;
+	}
+
+	public DatagramSocket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(DatagramSocket socket) {
+		this.socket = socket;
+	}
+
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
 	}
 
 	public InetAddress getIP() {
