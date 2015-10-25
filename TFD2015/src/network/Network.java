@@ -76,7 +76,6 @@ public class Network {
 			byte[] dataSend = outputStream.toByteArray();
 			DatagramPacket sendPacket = new DatagramPacket(dataSend,
 					dataSend.length, IPaddress, port);
-			socket.bind(new InetSocketAddress(IPaddress, port));
 			socket.send(sendPacket);
 			outputStream.close();
 			os.close();
