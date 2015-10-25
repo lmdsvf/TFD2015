@@ -21,7 +21,8 @@ public class Server {
 		backupServers = new HashMap<String, DealWithServers>();
 		int mod = state.getView_number() % state.getConfiguration().size();
 		if (mod == state.getReplica_number()) {
-			// new ConnectToServers().start();
+			//new ConnecteToServers().start();
+			
 			new StartServicingClient(state).start();
 			System.out.println("Primario esta Disponivel");
 		} else {

@@ -22,6 +22,7 @@ public class DealWithServersTest extends Thread {
 			case PREPARE:
 				// verificar se o op number
 				System.err.println("Recebeu pah!!!!!!!");
+				System.out.println("Bham: " + msg.getView_number());
 				// Message pOK = new Message(MessageType.PREPARE_OK,);
 				break;
 			default:

@@ -36,6 +36,7 @@ public class Message implements Serializable {
 	// Prepare Message
 	public Message(MessageType prepare, int i, Message msg, int j, int k) {
 		// TODO Auto-generated constructor stub
+		this.view_number=i;
 	}
 
 	public MessageType getType() {
