@@ -1,10 +1,13 @@
 package serverSide;
 
-import java.net.SocketException;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
 
-import network.Network;
 import message.Message;
 import message.MessageType;
+import network.Network;
 
 public class StartServicingClient extends Thread {
 
@@ -17,8 +20,17 @@ public class StartServicingClient extends Thread {
 
 	@Override
 	public void run() {
-		
-		server = new Network(Server.PORT);
+		Properties properties= new Properties();
+		try {
+			properties.load(new FileReader("Configuration.txt"));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		server = new Network(Integer.parseInt(properties.getProperty("PClient")));
 		System.out.println("ServerSocket activa");
 		while (true) { // espera q venha clients
 			System.out.println("Waiting for clients...");
