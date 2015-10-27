@@ -74,6 +74,7 @@ public class Network {
 			ObjectOutputStream os = new ObjectOutputStream(outputStream);
 			os.writeObject(data);
 			byte[] dataSend = outputStream.toByteArray();
+			System.out.println(IPaddress.getHostAddress());
 			DatagramPacket sendPacket = new DatagramPacket(dataSend,
 					dataSend.length, IPaddress, port);
 			socket.send(sendPacket);
