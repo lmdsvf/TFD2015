@@ -58,7 +58,7 @@ public class StartServicingClient extends Thread {
 			case REQUEST:
 				// send prepare to all backups
 				Message sm = new Message(MessageType.PREPARE, 12548, msg, 1, 0);
-				new ConnecteToServers(sm, state).start();
+				
 				// for (DealWithServers ds : backupServers.values()) {
 				// ds.getNetwork().send(sm);
 				// }
