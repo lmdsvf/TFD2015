@@ -90,19 +90,20 @@ public class Network {
 		DatagramPacket receivedPacket = new DatagramPacket(receivedData,
 				receivedData.length);
 		try {
+			System.out.println(socket.getLocalPort() + " - " + socket.getLocalAddress());
 			socket.setSoTimeout(timeout);
 			socket.receive(receivedPacket);
 			ByteArrayInputStream in = new ByteArrayInputStream(
 					receivedPacket.getData());
 			ObjectInputStream is = new ObjectInputStream(in);
-
 			returnObject = (Message) is.readObject();
 			in.close();
 			is.close();
 		} catch (SocketTimeoutException e) {
+			e.printStackTrace();
 			return null;
 		} catch (IOException e) {
-
+			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			System.err.println("Erro no tipo de mensagem Message!");
 			e.printStackTrace();
