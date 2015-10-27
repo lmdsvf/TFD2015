@@ -24,8 +24,9 @@ public class clienttest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Network net = new Network("192.168.1.3", Integer.parseInt(properties
-				.getProperty("PClient")));
+
+		Network net = new Network(properties.getProperty("IP0"),
+				Integer.parseInt(properties.getProperty("PClient")));
 		for (int i = 0; i < 1; i++) {
 			Message a;
 			try {

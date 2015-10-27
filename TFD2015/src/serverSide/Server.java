@@ -21,8 +21,8 @@ public class Server {
 		backupServers = new HashMap<String, DealWithServers>();
 		int mod = state.getView_number() % state.getConfiguration().size();
 		if (mod == state.getReplica_number()) {
-			//new ConnecteToServers().start();
-			
+			// new ConnecteToServers().start();
+
 			new StartServicingClient(state).start();
 			System.out.println("Primario esta Disponivel");
 		} else {
@@ -45,7 +45,8 @@ public class Server {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			server = new Network(Integer.parseInt(properties.getProperty("PServer")));
+			server = new Network(Integer.parseInt(properties
+					.getProperty("PServer")));
 			System.out.println("ServerSocket activa");
 			while (true) { // espera q venha clients
 				System.out.println("Waiting for primary...");
