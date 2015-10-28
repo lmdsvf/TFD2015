@@ -1,16 +1,19 @@
 package serverSide;
 
-import network.Network;
-import message.Message;
-import message.MessageType;
+import java.net.DatagramPacket;
 
+import message.Message;
+import network.Network;
 
 public class DealWithServers extends Thread {
-	private Network net;
+	private Network rawData;
+	private Message msg;
 
-	public DealWithServers(Network net) {
-		this.net = net;
+	public DealWithServers(DatagramPacket data) {
+		this.rawData=data;
+		this.msg=Network.networkToMessage(data);
 	}
+
 	public Network getNetwork() {
 		return net;
 	}
@@ -21,9 +24,9 @@ public class DealWithServers extends Thread {
 			Message msg = net.receive();
 			switch (msg.getType()) {
 			case PREPARE:
-				// verificar se o op number 
+				// verificar se o op number
 				System.err.println("Recebeu pah!!!!!!!");
-				//Message pOK = new Message(MessageType.PREPARE_OK,);
+				// Message pOK = new Message(MessageType.PREPARE_OK,);
 				break;
 
 			default:
