@@ -4,10 +4,12 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Properties;
 
 import message.Message;
+import message.MessageType;
 import network.Network;
 
 public class Server {
@@ -16,10 +18,22 @@ public class Server {
 	private Network serversSockets;
 	private ServerState state;
 	private HashMap<String, DealWithServers> backupServers;
+	private Properties properties;
 
 	public Server() {
 		state = new ServerState();
 		backupServers = new HashMap<String, DealWithServers>();
+		properties = new Properties();
+		try {
+			properties.load(new FileReader("Configuration.txt"));
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		int mod = state.getView_number() % state.getConfiguration().size();
 		// primario
 		if (mod == state.getReplica_number()) {
@@ -38,17 +52,7 @@ public class Server {
 
 		@Override
 		public void run() {
-			Properties properties = new Properties();
-			try {
-				properties.load(new FileReader("Configuration.txt"));
 
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			backUpServer = new Network(Integer.parseInt(properties
 					.getProperty("PServer")));
 			System.out.println("BackUp activo");
@@ -71,9 +75,11 @@ public class Server {
 		class DealWithServers extends Thread {
 			private DatagramPacket rawData;
 			private Message msg;
+			private InetAddress ipPrimary;
 
 			public DealWithServers(DatagramPacket data) {
 				this.rawData = data;
+				this.ipPrimary = data.getAddress();
 				this.msg = Network.networkToMessage(data);
 			}
 
@@ -82,8 +88,12 @@ public class Server {
 				switch (msg.getType()) {
 				case PREPARE:
 					// verificar se o op number
-					System.err.println("Recebeu pah!!!!!!!");
-					// Message pOK = new Message(MessageType.PREPARE_OK,);
+					Message prepareOk = new Message(MessageType.PREPARE_OK, 1,
+							1, "Menham");
+					backUpServer
+							.send(prepareOk, ipPrimary,
+									Integer.parseInt(properties
+											.getProperty("PServer")));
 					break;
 				default:
 					break;
