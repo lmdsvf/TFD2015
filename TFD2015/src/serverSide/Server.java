@@ -20,11 +20,13 @@ public class Server {
 		state = new ServerState();
 		backupServers = new HashMap<String, DealWithServers>();
 		int mod = state.getView_number() % state.getConfiguration().size();
+		
+		// primario
 		if (mod == state.getReplica_number()) {
 			// new ConnecteToServers().start();
-
 			new StartServicingClient(state).start();
 			System.out.println("Primario esta Disponivel");
+		// replica
 		} else {
 			new KeepingPortOpen().start();
 		}
@@ -50,10 +52,11 @@ public class Server {
 			System.out.println("ServerSocket activa");
 			while (true) { // espera q venha clients
 				System.out.println("Waiting for primary...");
-				Message message = server.receive();
+				
+			//	Message message = server.receive();
 				// state.getClientTable().put(server.getIP().toString(), new
 				// Tuple());
-				new DealWithServersTest(message).start();
+			//	new DealWithServersTest(message).start();
 			}
 		}
 	}

@@ -3,6 +3,8 @@ package serverSide;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.util.Properties;
 
 import message.Message;
@@ -32,12 +34,17 @@ public class StartServicingClient extends Thread {
 		}
 		server = new Network(Integer.parseInt(properties.getProperty("PClient")));
 		System.out.println("ServerSocket activa");
+		
 		while (true) { // espera q venha clients
 			System.out.println("Waiting for clients...");
-			Message message = server.receive();
+			DatagramPacket data = server.receive();
+			
+			if(data != null) // se nao fez timeout
+				new DealWithClient(data).start();
+			else
+				System.out.println("Send keep alive to backups");
 			// state.getClientTable().put(server.getIP().toString(), new
 			// Tuple());
-			new DealWithClient(message).start();
 		}
 	}
 
@@ -45,15 +52,18 @@ public class StartServicingClient extends Thread {
 
 		private Message msg;
 		private String clientName;
-
-		private DealWithClient(Message msg) {
-			this.msg = msg;
+		private InetAddress clientIP;
+		private int clientPort;
+		
+		private DealWithClient(DatagramPacket data) {
+			clientIP = data.getAddress();
+			this.msg = Network.networkToMessage(data);
 		}
 
 		@Override
 		public void run() {
 			// if (server.getSocket().isConnected()) {
-
+System.out.println("Received: " + msg.getType());
 			switch (msg.getType()) {
 			case REQUEST:
 				// send prepare to all backups
@@ -71,7 +81,7 @@ public class StartServicingClient extends Thread {
 				// }
 
 				Message reply = new Message(MessageType.REPLY, 0, msg.getRequest_Number(), "result");
-				server.send(reply);
+				server.send(reply,clientIP);
 				break;
 			default:
 				break;

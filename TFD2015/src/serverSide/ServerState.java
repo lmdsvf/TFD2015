@@ -23,7 +23,7 @@ public class ServerState {
 	private HashMap<String, Tuple> clientTable;
 
 	private Properties properties;
-	private static final int NUMBEROFIPS = 2;
+	private static final int NUMBEROFIPS = 1;
 
 	public ServerState() {
 		try {
@@ -40,8 +40,8 @@ public class ServerState {
 				configuration.add(properties.get("IP" + i).toString());
 			}
 			// configuration.sort(null);
-			replica_number = configuration.indexOf(InetAddress.getLocalHost()
-					.getHostAddress().toString());
+			replica_number = configuration.indexOf(InetAddress.getLocalHost().getHostAddress().toString());
+			System.out.println("My ip: " + InetAddress.getLocalHost().getHostAddress().toString());
 			status = Status.NORMAL;
 			log = new ArrayList<Message>();
 			clientTable = new HashMap<String, Tuple>();

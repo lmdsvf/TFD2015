@@ -119,4 +119,10 @@ public class Message implements Serializable {
 		this.request_Number = request_Number;
 	}
 
+	public String toString(){
+		StringBuilder str = new StringBuilder();
+		str.append(type);
+		return str.toString();
+		
+	}
 }

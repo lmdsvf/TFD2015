@@ -23,8 +23,8 @@ public class Network {
 
 	private byte[] receivedData;
 	private final int BUFFERSIZE = 1024;
-	private int port;
 	private InetAddress IPaddress;
+	private int port;
 	private DatagramSocket socket;
 	private int timeout;
 
@@ -68,14 +68,15 @@ public class Network {
 		}
 	}
 
-	public void send(Message data) {
+	public void send(Message data, InetAddress ip) {
 		try {
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ObjectOutputStream os = new ObjectOutputStream(outputStream);
 			os.writeObject(data);
 			byte[] dataSend = outputStream.toByteArray();
 			DatagramPacket sendPacket = new DatagramPacket(dataSend,
-					dataSend.length, IPaddress, port);
+					dataSend.length, ip, port);
+			System.out.println("Sending to " + ip.getHostAddress() + ":" + port);
 			socket.send(sendPacket);
 			outputStream.close();
 			os.close();
@@ -84,38 +85,56 @@ public class Network {
 		}
 	}
 
-	public Message receive() {
-		System.out.println("Receiving data...");
-		Message returnObject = null;
+	public DatagramPacket receive() {
+		System.out.println("\n\nReceiving data...");
+//		Message returnObject = null;
 		DatagramPacket receivedPacket = new DatagramPacket(receivedData,
 				receivedData.length);
 		try {
-			System.out.println(socket.getLocalPort() + " - " + socket.getLocalAddress());
 			socket.setSoTimeout(timeout);
 			socket.receive(receivedPacket);
-			ByteArrayInputStream in = new ByteArrayInputStream(
-					receivedPacket.getData());
-			ObjectInputStream is = new ObjectInputStream(in);
-			returnObject = (Message) is.readObject();
-			in.close();
-			is.close();
+//			System.out.println(socket.getLocalPort() + " - " + socket.getLocalAddress());
+//			ByteArrayInputStream in = new ByteArrayInputStream(
+//					receivedPacket.getData());
+//			ObjectInputStream is = new ObjectInputStream(in);
+//			returnObject = (Message) is.readObject();
+//			in.close();
+//			is.close();
 		} catch (SocketTimeoutException e) {
-			e.printStackTrace();
+//			//e.printStackTrace();
 			return null;
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			System.err.println("Erro no tipo de mensagem Message!");
-			e.printStackTrace();
+//		} catch (ClassNotFoundException e) {
+//			System.err.println("Erro no tipo de mensagem Message!");
+//			e.printStackTrace();
 		}
-
-		if (IPaddress == null || port == 0) {
-			IPaddress = receivedPacket.getAddress();
-			port = receivedPacket.getPort();
-		}
-		return returnObject;
+//
+//		if (IPaddress == null || port == 0) {
+//			IPaddress = receivedPacket.getAddress();
+//		}
+		return receivedPacket;
 	}
 
+	public static Message networkToMessage(DatagramPacket data){
+		ByteArrayInputStream in = new ByteArrayInputStream(data.getData());
+		ObjectInputStream is;
+		Message message = null;
+		try {
+			is = new ObjectInputStream(in);
+			message = (Message) is.readObject();
+			in.close();
+			is.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return message;
+	}
+	
 	public DatagramSocket getSocket() {
 		return socket;
 	}
