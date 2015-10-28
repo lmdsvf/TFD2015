@@ -2,14 +2,13 @@ package serverSide;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 
+import network.Network;
 import message.Message;
-import clientSide.Client;
 
 public class ServerState {
 	private ArrayList<String> configuration;
@@ -30,18 +29,27 @@ public class ServerState {
 			properties = new Properties();
 			properties.load(new FileReader("Configuration.txt"));
 			configuration = new ArrayList<String>();
-			/*
-			 * configuration.add("127.0.0.1"); configuration.add("192.168.1.3");
-			 * configuration.add("192.168.1.4");
-			 */
-			// configuration.add("10.101.149.41");
-			// configuration.sort(null);
+
 			for (int i = 0; i < NUMBEROFIPS; i++) {
 				configuration.add(properties.get("IP" + i).toString());
 			}
-			// configuration.sort(null);
-			replica_number = configuration.indexOf(InetAddress.getLocalHost().getHostAddress().toString());
-			System.out.println("My ip: " + InetAddress.getLocalHost().getHostAddress().toString());
+			
+			System.out.println("Getting my ip!");
+			String usingIp = null;
+			for(String ip : configuration){
+				for(String my_ip : Network.getAllIps()){
+					System.out.println("Testing " + ip + " with " + my_ip);
+					if(ip.equals(my_ip)){
+						System.out.println("got it");
+						usingIp = ip;
+						break;
+					}
+				}
+				if(usingIp != null) break;
+			}
+			
+			System.out.println("My ip: " + usingIp);
+			replica_number = configuration.indexOf(usingIp);
 			status = Status.NORMAL;
 			log = new ArrayList<Message>();
 			clientTable = new HashMap<String, Tuple>();
