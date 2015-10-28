@@ -35,6 +35,7 @@ public class Server {
 			e.printStackTrace();
 		}
 		int mod = state.getView_number() % state.getConfiguration().size();
+		
 		// primario
 		if (mod == state.getReplica_number()) {
 			// new ConnecteToServers().start();

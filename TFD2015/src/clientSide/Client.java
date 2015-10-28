@@ -8,6 +8,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -116,26 +118,14 @@ public class Client {
 //	}
 
 	public static void main(String[] args) throws SocketException {
-		NetworkInterface ni;
-		ni = NetworkInterface.getByName("eth0");
-	
 		
-		Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
-		
-		while(inetAddresses.hasMoreElements()){
-			InetAddress ia = inetAddresses.nextElement();
-			if(!ia.isLinkLocalAddress() && (ia.getHostAddress().split(".").length > 0)){
-				System.out.println(ia.getHostAddress());
-			}
-		}
-		/*
 		int nClients = 1;
 		String operation = "echo Ola Mundo!";
 		for (int i = 0;i<nClients;i++){
 			new Client(operation);
 			System.out.println("New Client Created!");
 		}
-		*/
+		
 	}
 
 }

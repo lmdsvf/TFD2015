@@ -14,10 +14,10 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Properties;
-
-import javax.swing.JOptionPane;
 
 import message.Message;
 
@@ -96,26 +96,13 @@ public class Network {
 		try {
 			socket.setSoTimeout(timeout);
 			socket.receive(receivedPacket);
-//			System.out.println(socket.getLocalPort() + " - " + socket.getLocalAddress());
-//			ByteArrayInputStream in = new ByteArrayInputStream(
-//					receivedPacket.getData());
-//			ObjectInputStream is = new ObjectInputStream(in);
-//			returnObject = (Message) is.readObject();
-//			in.close();
-//			is.close();
 		} catch (SocketTimeoutException e) {
 //			//e.printStackTrace();
 			return null;
 		} catch (IOException e) {
 			e.printStackTrace();
-//		} catch (ClassNotFoundException e) {
-//			System.err.println("Erro no tipo de mensagem Message!");
-//			e.printStackTrace();
 		}
-//
-//		if (IPaddress == null || port == 0) {
-//			IPaddress = receivedPacket.getAddress();
-//		}
+		
 		return receivedPacket;
 	}
 
@@ -138,23 +125,28 @@ public class Network {
 		return message;
 	}
 	
-	public static boolean isPrimary(String ip){
-		NetworkInterface ni;
+
+	// gets all the ips of the current machine
+	public static ArrayList<String> getAllIps(){
+		ArrayList<String> allAddresses = new ArrayList<String>();
+        
+		Enumeration<NetworkInterface> nets = null;
 		try {
-			ni = NetworkInterface.getByName("eth0");
+			nets = NetworkInterface.getNetworkInterfaces();
 		} catch (SocketException e) {
-			return false;
+			return null;
 		}
 		
-		Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
+		if(nets == null) return null;
 		
-		while(inetAddresses.hasMoreElements()){
-			InetAddress ia = inetAddresses.nextElement();
-			if(!ia.isLinkLocalAddress()){
-				if(ia.getHostAddress().equals(ip)) return true;
-			}
-		}
-		return false;
+        for (NetworkInterface netint : Collections.list(nets)){
+	        Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+	        for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+	        	allAddresses.add(inetAddress.getHostAddress());
+	        }
+        }
+        
+        return allAddresses;
 	}
 	
 	public DatagramSocket getSocket() {
