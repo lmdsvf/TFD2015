@@ -79,17 +79,14 @@ public class Server {
 
 			@Override
 			public void run() {
-				while (true) {
-					switch (msg.getType()) {
-					case PREPARE:
-						// verificar se o op number
-						System.err.println("Recebeu pah!!!!!!!");
-						// Message pOK = new Message(MessageType.PREPARE_OK,);
-						break;
-					default:
-						break;
-					}
-
+				switch (msg.getType()) {
+				case PREPARE:
+					// verificar se o op number
+					System.err.println("Recebeu pah!!!!!!!");
+					// Message pOK = new Message(MessageType.PREPARE_OK,);
+					break;
+				default:
+					break;
 				}
 			}
 
