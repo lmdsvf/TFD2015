@@ -64,7 +64,7 @@ public class Server {
 				if (data != null) // se nao fez timeout
 					new DealWithServers(data).start();
 				else
-					System.out.println("Send keep alive to backups");
+					System.out.println("Don't do nothing!");
 				// Message message = server.receive();
 				// state.getClientTable().put(server.getIP().toString(), new
 				// Tuple());
@@ -88,6 +88,7 @@ public class Server {
 				switch (msg.getType()) {
 				case PREPARE:
 					// verificar se o op number
+					System.err.println("Recebeu Pah!");
 					Message prepareOk = new Message(MessageType.PREPARE_OK, 1,
 							1, "Menham");
 					backUpServer
