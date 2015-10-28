@@ -25,7 +25,7 @@ public class Message implements Serializable {
 		this.request_Number = s;
 	}
 
-	// Reply Message
+	// Reply Message e prepareOk
 	public Message(MessageType reply, int i, int i2, String string) {
 		this.type = reply;
 		this.view_number = i;
