@@ -10,8 +10,8 @@ import message.Message;
 import network.Network;
 
 public class Server {
-	public static final int PORT = 4567;
-	public static final int PORT_S = 4568;
+	//public static final int PORT = 4567;
+	//public static final int PORT_S = 4568;
 	private Network serversSockets;
 	private ServerState state;
 	private HashMap<String, DealWithServers> backupServers;

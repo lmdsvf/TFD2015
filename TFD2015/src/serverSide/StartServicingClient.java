@@ -32,14 +32,15 @@ public class StartServicingClient extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		server = new Network(Integer.parseInt(properties.getProperty("PClient")));
+		server = new Network(
+				Integer.parseInt(properties.getProperty("PClient")));
 		System.out.println("ServerSocket activa");
-		
+
 		while (true) { // espera q venha clients
 			System.out.println("Waiting for clients...");
 			DatagramPacket data = server.receive();
-			
-			if(data != null) // se nao fez timeout
+
+			if (data != null) // se nao fez timeout
 				new DealWithClient(data).start();
 			else
 				System.out.println("Send keep alive to backups");
@@ -53,22 +54,24 @@ public class StartServicingClient extends Thread {
 		private Message msg;
 		private String clientName;
 		private InetAddress clientIP;
+		private int portDestination;
 		private int clientPort;
-		
+
 		private DealWithClient(DatagramPacket data) {
 			clientIP = data.getAddress();
+			portDestination = data.getPort();
 			this.msg = Network.networkToMessage(data);
 		}
 
 		@Override
 		public void run() {
 			// if (server.getSocket().isConnected()) {
-System.out.println("Received: " + msg.getType());
+			System.out.println("Received: " + msg.getType());
 			switch (msg.getType()) {
 			case REQUEST:
 				// send prepare to all backups
 				Message sm = new Message(MessageType.PREPARE, 12548, msg, 1, 0);
-				
+
 				// for (DealWithServers ds : backupServers.values()) {
 				// ds.getNetwork().send(sm);
 				// }
@@ -80,8 +83,9 @@ System.out.println("Received: " + msg.getType());
 				// ok++;
 				// }
 
-				Message reply = new Message(MessageType.REPLY, 0, msg.getRequest_Number(), "result");
-				server.send(reply,clientIP);
+				Message reply = new Message(MessageType.REPLY, 0,
+						msg.getRequest_Number(), "result");
+				server.send(reply, clientIP, portDestination);
 				break;
 			default:
 				break;

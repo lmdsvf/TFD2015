@@ -68,14 +68,14 @@ public class Network {
 		}
 	}
 
-	public void send(Message data, InetAddress ip) {
+	public void send(Message data, InetAddress ip, int portDestination) {
 		try {
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ObjectOutputStream os = new ObjectOutputStream(outputStream);
 			os.writeObject(data);
 			byte[] dataSend = outputStream.toByteArray();
 			DatagramPacket sendPacket = new DatagramPacket(dataSend,
-					dataSend.length, ip, port);
+					dataSend.length, ip, portDestination);
 			System.out.println("Sending to " + ip.getHostAddress() + ":" + port);
 			socket.send(sendPacket);
 			outputStream.close();
