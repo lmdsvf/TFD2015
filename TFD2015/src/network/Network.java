@@ -10,11 +10,14 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.Properties;
+
+import javax.swing.JOptionPane;
 
 import message.Message;
 
@@ -133,6 +136,25 @@ public class Network {
 			e.printStackTrace();
 		}
 		return message;
+	}
+	
+	public static boolean isPrimary(String ip){
+		NetworkInterface ni;
+		try {
+			ni = NetworkInterface.getByName("eth0");
+		} catch (SocketException e) {
+			return false;
+		}
+		
+		Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
+		
+		while(inetAddresses.hasMoreElements()){
+			InetAddress ia = inetAddresses.nextElement();
+			if(!ia.isLinkLocalAddress()){
+				if(ia.getHostAddress().equals(ip)) return true;
+			}
+		}
+		return false;
 	}
 	
 	public DatagramSocket getSocket() {

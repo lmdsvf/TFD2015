@@ -5,7 +5,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import network.Network;
@@ -17,12 +20,10 @@ public class Client {
 	private String serverAddress;
 	private int port;
 
-	public Client(int id) {
+	public Client(String op) {
 		readConfiguration();
-		state = new ClientState(id);
-		execute();
-		// TODO Auto-generated constructor stub
-		// connection();
+		state = new ClientState();
+		execute(op);
 	}
 
 	private void readConfiguration() {
@@ -41,10 +42,17 @@ public class Client {
 		}
 	}
 	
-	public void execute(){
-		System.out.println(state.toString()+"");
+	public void execute(String op){
+		try {
+			System.out.println(InetAddress.getLocalHost().getHostAddress().toString());
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		Network net = new Network(serverAddress,port);
-		Message msg = new Message(MessageType.REQUEST,"operation",state.getId()+"",0);
+		state.setId(net.getSocket().getLocalAddress()+":"+net.getSocket().getLocalPort());
+		System.out.println(state.toString());
+		Message msg = new Message(MessageType.REQUEST,op ,state.getIpAddress()+"",0);
 		try {
 			net.send(msg, InetAddress.getByName(serverAddress), port);
 			DatagramPacket data = net.receive();
@@ -107,12 +115,27 @@ public class Client {
 //
 //	}
 
-	public static void main(String[] args) {
-		int nClients = 10;
+	public static void main(String[] args) throws SocketException {
+		NetworkInterface ni;
+		ni = NetworkInterface.getByName("eth0");
+	
+		
+		Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
+		
+		while(inetAddresses.hasMoreElements()){
+			InetAddress ia = inetAddresses.nextElement();
+			if(!ia.isLinkLocalAddress() && (ia.getHostAddress().split(".").length > 0)){
+				System.out.println(ia.getHostAddress());
+			}
+		}
+		/*
+		int nClients = 1;
+		String operation = "echo Ola Mundo!";
 		for (int i = 0;i<nClients;i++){
-			new Client(i);
+			new Client(operation);
 			System.out.println("New Client Created!");
 		}
+		*/
 	}
 
 }
