@@ -42,7 +42,7 @@ public class Client {
 	}
 	
 	public void execute(){
-		System.out.println(state.toString());
+		System.out.println(state.toString()+"");
 		Network net = new Network(serverAddress,port);
 		Message msg = new Message(MessageType.REQUEST,"operation",state.getId()+"",0);
 		try {
