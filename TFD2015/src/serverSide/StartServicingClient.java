@@ -84,7 +84,6 @@ public class StartServicingClient extends Thread {
 				}
 				Message prepare = new Message(MessageType.PREPARE, 34, 43,
 						"YUP!");
-
 				try {
 					server.send(prepare,
 							InetAddress.getByName(p.getProperty("IP1")),
@@ -99,7 +98,11 @@ public class StartServicingClient extends Thread {
 				// for (DealWithServers ds : backupServers.values()) {
 				// ds.getNetwork().send(sm);
 				// }
-
+				DatagramPacket prepareOk = server.receive();
+				Message newPrepareOk = Network.networkToMessage(prepareOk);
+				if (newPrepareOk.getType().equals(MessageType.PREPARE_OK)) {
+					System.out.println("Recebe AQUI!!!!!!!!");
+				}
 				// wait for half the prepare_ok message
 				// int ok = 0;
 				// while(ok < (backupServers.size()/2) + 1){
