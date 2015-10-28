@@ -72,7 +72,7 @@ public class StartServicingClient extends Thread {
 			case REQUEST:
 				// send prepare to all backups
 				Message sm = new Message(MessageType.PREPARE, 12548, msg, 1, 0);
-				Properties p = new Properties();//nada
+				Properties p = new Properties();// nada
 				try {
 					p.load(new FileReader("Configuration.txt"));
 				} catch (FileNotFoundException e) {
@@ -106,7 +106,6 @@ public class StartServicingClient extends Thread {
 				//
 				// ok++;
 				// }
-
 				Message reply = new Message(MessageType.REPLY, 0,
 						msg.getRequest_Number(), "result");
 				server.send(reply, clientIP, portDestination);
@@ -114,23 +113,6 @@ public class StartServicingClient extends Thread {
 			default:
 				break;
 			}
-			/*
-			 * ServerMessage message = (ServerMessage) in.readObject();
-			 * 
-			 * switch (message.getType()) { case CONNECTED: if
-			 * (!maps.contains(message.getSenderNickname())) { clientName =
-			 * message.getSenderNickname();
-			 * 
-			 * maps.addEntry(message.getSenderNickname(), out); q.add(message);
-			 * } else { ClientMessage msg = new ClientMessage(
-			 * ClientSideMessage.Type.ERROR, "ja existe esse nome");
-			 * out.writeObject(msg); } break; case NEW_ORDER: q.add(message);
-			 * break; default: break; }
-			 */
-			// } else {
-			// System.out.println("Fixe, resultou!");
-			//
-			// }
 		}
 	}
 }
