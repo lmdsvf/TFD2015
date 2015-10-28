@@ -72,7 +72,7 @@ public class StartServicingClient extends Thread {
 			case REQUEST:
 				// send prepare to all backups
 				Message sm = new Message(MessageType.PREPARE, 12548, msg, 1, 0);
-				Properties p = new Properties();
+				Properties p = new Properties();//nada
 				try {
 					p.load(new FileReader("Configuration.txt"));
 				} catch (FileNotFoundException e) {
