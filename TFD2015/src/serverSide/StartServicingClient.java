@@ -15,6 +15,7 @@ import network.Network;
 public class StartServicingClient extends Thread {
 
 	private Network server;
+	private Network serverToserver;
 	private ServerState state;
 
 	public StartServicingClient(ServerState state) {
@@ -85,6 +86,8 @@ public class StartServicingClient extends Thread {
 				Message prepare = new Message(MessageType.PREPARE, 34, 43,
 						"YUP!");
 				try {
+					serverToserver = new Network(Integer.parseInt(p
+							.getProperty("PServer")));
 					server.send(prepare,
 							InetAddress.getByName(p.getProperty("IP1")),
 							Integer.parseInt(p.getProperty("PServer")));
@@ -98,7 +101,7 @@ public class StartServicingClient extends Thread {
 				// for (DealWithServers ds : backupServers.values()) {
 				// ds.getNetwork().send(sm);
 				// }
-				DatagramPacket prepareOk = server.receive();
+				DatagramPacket prepareOk = serverToserver.receive();
 				Message newPrepareOk = Network.networkToMessage(prepareOk);
 				if (newPrepareOk.getType().equals(MessageType.PREPARE_OK)) {
 					System.out.println("Recebe AQUI!!!!!!!!");
