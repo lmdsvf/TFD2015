@@ -37,7 +37,8 @@ public class StartServicingClient extends Thread {
 		server = new Network(
 				Integer.parseInt(properties.getProperty("PClient")));
 		System.out.println("ServerSocket activa");
-
+		serverToserver = new Network(Integer.parseInt(state.getProperties()
+				.getProperty("PServer")));
 		while (true) { // espera q venha clients
 			System.out.println("Waiting for clients...");
 			DatagramPacket data = server.receive();
@@ -73,24 +74,13 @@ public class StartServicingClient extends Thread {
 			case REQUEST:
 				// send prepare to all backups
 				Message sm = new Message(MessageType.PREPARE, 12548, msg, 1, 0);
-				Properties p = new Properties();// nada
-				try {
-					p.load(new FileReader("Configuration.txt"));
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 				Message prepare = new Message(MessageType.PREPARE, 34, 43,
 						"YUP!");
 				try {
-					serverToserver = new Network(Integer.parseInt(p
-							.getProperty("PServer")));
 					for (String ip : state.getConfiguration()) {
-						server.send(prepare, InetAddress.getByName(ip),
-								Integer.parseInt(p.getProperty("PServer")));
+						server.send(prepare, InetAddress.getByName(ip), Integer
+								.parseInt(state.getProperties().getProperty(
+										"PServer")));
 						System.out.println("Sended to: " + ip);
 					}
 
@@ -113,8 +103,8 @@ public class StartServicingClient extends Thread {
 					Message newPrepareOk = Network.networkToMessage(prepareOk);
 					if (newPrepareOk.getType().equals(MessageType.PREPARE_OK)) {
 						System.out.println("Recebe AQUI!!!!!!!!");
+						i++;
 					}
-					i++;
 				}
 
 				// wait for half the prepare_ok message
