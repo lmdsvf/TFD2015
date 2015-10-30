@@ -105,7 +105,8 @@ public class StartServicingClient extends Thread {
 				// ds.getNetwork().send(sm);
 				// }
 				int i = 0;
-				while (i < state.getConfiguration().size() - 1) {
+				int majority = ((state.getConfiguration().size() / 2) + 1);
+				while (i < majority) {
 					DatagramPacket prepareOk = serverToserver.receive();
 					System.out.println("BackUp ip: " + prepareOk.getAddress());
 					Message newPrepareOk = Network.networkToMessage(prepareOk);
