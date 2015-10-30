@@ -23,10 +23,9 @@ public class Server {
 	public Server() {
 		state = new ServerState();
 		backupServers = new HashMap<String, DealWithServers>();
-		properties = new Properties();
+		properties = state.getProperties();
 		try {
 			properties.load(new FileReader("Configuration.txt"));
-
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -35,7 +34,6 @@ public class Server {
 			e.printStackTrace();
 		}
 		int mod = state.getView_number() % state.getConfiguration().size();
-		
 		// primario
 		if (mod == state.getReplica_number()) {
 			// new ConnecteToServers().start();

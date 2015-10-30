@@ -22,7 +22,7 @@ public class ServerState {
 	private HashMap<String, Tuple> clientTable;
 
 	private Properties properties;
-	private static final int NUMBEROFIPS = 1;
+	private static final int NUMBEROFIPS = 3;
 
 	public ServerState() {
 		try {
@@ -65,6 +65,10 @@ public class ServerState {
 
 	public ArrayList<String> getConfiguration() {
 		return configuration;
+	}
+	
+	public Properties getProperties() {
+		return properties;
 	}
 
 	public void setConfiguration(ArrayList<String> configuration) {

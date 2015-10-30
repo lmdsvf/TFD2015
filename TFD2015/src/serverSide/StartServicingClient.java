@@ -88,9 +88,13 @@ public class StartServicingClient extends Thread {
 				try {
 					serverToserver = new Network(Integer.parseInt(p
 							.getProperty("PServer")));
-					server.send(prepare,
-							InetAddress.getByName(p.getProperty("IP1")),
-							Integer.parseInt(p.getProperty("PServer")));
+					for (String ip : state.getConfiguration()) {
+						server.send(prepare,
+								InetAddress.getByName(p.getProperty(ip)),
+								Integer.parseInt(p.getProperty("PServer")));
+						System.out.println("Sended to: " + ip);
+					}
+
 				} catch (NumberFormatException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
