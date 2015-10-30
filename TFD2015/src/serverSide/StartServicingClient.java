@@ -106,6 +106,7 @@ public class StartServicingClient extends Thread {
 				// }
 				int i = 0;
 				int majority = ((state.getConfiguration().size() / 2) + 1);
+				System.err.println("Majority: " + majority);
 				while (i < majority) {
 					DatagramPacket prepareOk = serverToserver.receive();
 					System.out.println("BackUp ip: " + prepareOk.getAddress());
