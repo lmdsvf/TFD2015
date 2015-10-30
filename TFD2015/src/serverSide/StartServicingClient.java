@@ -90,7 +90,7 @@ public class StartServicingClient extends Thread {
 							.getProperty("PServer")));
 					for (String ip : state.getConfiguration()) {
 						server.send(prepare,
-								InetAddress.getByName(p.getProperty(ip)),
+								InetAddress.getByName(ip),
 								Integer.parseInt(p.getProperty("PServer")));
 						System.out.println("Sended to: " + ip);
 					}
