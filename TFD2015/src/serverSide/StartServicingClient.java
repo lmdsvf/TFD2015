@@ -89,8 +89,7 @@ public class StartServicingClient extends Thread {
 					serverToserver = new Network(Integer.parseInt(p
 							.getProperty("PServer")));
 					for (String ip : state.getConfiguration()) {
-						server.send(prepare,
-								InetAddress.getByName(ip),
+						server.send(prepare, InetAddress.getByName(ip),
 								Integer.parseInt(p.getProperty("PServer")));
 						System.out.println("Sended to: " + ip);
 					}
@@ -105,11 +104,16 @@ public class StartServicingClient extends Thread {
 				// for (DealWithServers ds : backupServers.values()) {
 				// ds.getNetwork().send(sm);
 				// }
-				DatagramPacket prepareOk = serverToserver.receive();
-				Message newPrepareOk = Network.networkToMessage(prepareOk);
-				if (newPrepareOk.getType().equals(MessageType.PREPARE_OK)) {
-					System.out.println("Recebe AQUI!!!!!!!!");
+				int i = 0;
+				while (i < state.getConfiguration().size() - 1) {
+					DatagramPacket prepareOk = serverToserver.receive();
+					Message newPrepareOk = Network.networkToMessage(prepareOk);
+					if (newPrepareOk.getType().equals(MessageType.PREPARE_OK)) {
+						System.out.println("Recebe AQUI!!!!!!!!");
+					}
+					i++;
 				}
+
 				// wait for half the prepare_ok message
 				// int ok = 0;
 				// while(ok < (backupServers.size()/2) + 1){
