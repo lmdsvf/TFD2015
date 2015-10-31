@@ -28,15 +28,31 @@ public class Message implements Serializable {
 	// Reply Message e prepareOk
 	public Message(MessageType reply, int i, int i2, String string) {
 		this.type = reply;
-		this.view_number = i;
-		this.request_Number = i2;
-		this.result = string;
+		switch (reply) {
+		case REPLY:
+			this.view_number = i;
+			this.request_Number = i2;
+			this.result = string;
+			break;
+		case PREPARE_OK:
+			this.view_number = i;
+			this.request_Number = i2;
+			this.backUp_Ip = string;
+			break;
+		default:
+			break;
+		}
+
 	}
 
 	// Prepare Message
 	public Message(MessageType prepare, int i, Message msg, int j, int k) {
 		// TODO Auto-generated constructor stub
-		this.view_number=i;
+		this.type = prepare;
+		this.view_number = i;
+		this.client_Message = msg;
+		this.operation_number = j;
+		this.commit_Number = k;
 	}
 
 	public MessageType getType() {
@@ -119,10 +135,10 @@ public class Message implements Serializable {
 		this.request_Number = request_Number;
 	}
 
-	public String toString(){
+	public String toString() {
 		StringBuilder str = new StringBuilder();
 		str.append(type);
 		return str.toString();
-		
+
 	}
 }
