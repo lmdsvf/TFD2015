@@ -17,6 +17,13 @@ public class Message implements Serializable {
 								// contactar
 	private int request_Number;
 
+	// Commit Message
+	public Message(MessageType commit, int view_number, int commit_number) {
+		this.type = commit;
+		this.view_number = view_number;
+		this.commit_Number = commit_number;
+	}
+
 	// Request Message
 	public Message(MessageType request, String op, String c, int s) {
 		this.type = request;
@@ -42,7 +49,6 @@ public class Message implements Serializable {
 		default:
 			break;
 		}
-
 	}
 
 	// Prepare Message

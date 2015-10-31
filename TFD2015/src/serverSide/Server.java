@@ -89,7 +89,6 @@ public class Server {
 							new Tuple(INCIALOPNUMBERVALUEINTUPLE,
 									INCIALRESULTVALUEINTUPLE));
 				}
-
 			}
 
 			@Override
@@ -105,6 +104,14 @@ public class Server {
 																				// melhor
 						bufferForMessagesWithToHigherOpNumber.add(msg);
 					} else {
+						state.setCommit_number(msg.getCommit_Number());// Não
+																		// tenho
+																		// a
+																		// certeza
+																		// se é
+																		// só
+																		// fazer
+																		// isot
 						state.op_number_increment();
 						state.getLog().add(this.msg);
 						Message prepareOk = new Message(MessageType.PREPARE_OK,
@@ -113,13 +120,21 @@ public class Server {
 						backUpServer.send(prepareOk, ipPrimary, Integer
 								.parseInt(properties.getProperty("PServer")));
 					}
-
+					break;
+				case COMMIT:
+					state.setCommit_number(msg.getCommit_Number());// Não
+					// tenho
+					// a
+					// certeza
+					// se é
+					// só
+					// fazer
+					// isot
 					break;
 				default:
 					break;
 				}
 			}
-
 		}
 	}
 
