@@ -128,4 +128,12 @@ public class ServerState {
 	public void setClientTable(HashMap<String, Tuple> clientTable) {
 		this.clientTable = clientTable;
 	}
+
+	public void op_number_increment() {
+		this.op_number = this.op_number++;
+	}
+
+	public void commit_number_increment() {
+		this.commit_number = this.commit_number++;
+	}
 }

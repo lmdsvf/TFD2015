@@ -24,18 +24,8 @@ public class StartServicingClient extends Thread {
 
 	@Override
 	public void run() {
-		Properties properties = new Properties();
-		try {
-			properties.load(new FileReader("Configuration.txt"));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		server = new Network(
-				Integer.parseInt(properties.getProperty("PClient")));
+		server = new Network(Integer.parseInt(state.getProperties()
+				.getProperty("PClient")));
 		System.out.println("ServerSocket activa");
 		serverToserver = new Network(Integer.parseInt(state.getProperties()
 				.getProperty("PServer")));
@@ -76,8 +66,12 @@ public class StartServicingClient extends Thread {
 			switch (msg.getType()) {
 			case REQUEST:
 				// send prepare to all backups
-				Message prepare = new Message(MessageType.PREPARE, 34, 43,
-						"YUP!");
+				state.getClientTable().get(clientIP.getHostAddress())
+						.setOp_number(msg.getRequest_Number());
+				Message prepare = new Message(MessageType.PREPARE,
+						state.getView_number(), msg, state.getOp_number(),
+						state.getCommit_number());// temos que ver o op_n e o
+													// commit_n
 				try {
 					for (String ip : state.getConfiguration()) {
 						server.send(prepare, InetAddress.getByName(ip), Integer
@@ -115,12 +109,12 @@ public class StartServicingClient extends Thread {
 				// ok++;
 				// }
 				state.getClientTable().get(clientIP.getHostAddress())
-						.setOp_number(msg.getOperation_number());
+						.setOp_number(msg.getRequest_Number());
 				state.getClientTable().get(clientIP.getHostAddress())
 						.setResult("Result" + msg.getOperation_number());
-				Message reply = new Message(MessageType.REPLY, 0,
-						msg.getRequest_Number(), "result"
-								+ msg.getOperation_number());
+				Message reply = new Message(MessageType.REPLY,
+						state.getView_number(), msg.getRequest_Number(),
+						"result" + msg.getRequest_Number());
 				server.send(reply, clientIP, portDestination);
 				break;
 			default:
