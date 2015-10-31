@@ -51,15 +51,12 @@ public class Server {
 
 		@Override
 		public void run() {
-
 			backUpServer = new Network(Integer.parseInt(properties
 					.getProperty("PServer")));
 			System.out.println("BackUp activo");
 			while (true) { // espera do contacto do primary
 				System.out.println("Waiting for primary...");
-
 				DatagramPacket data = backUpServer.receive();
-
 				if (data != null) // se nao fez timeout
 					new DealWithServers(data).start();
 				else

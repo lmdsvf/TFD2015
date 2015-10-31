@@ -29,25 +29,23 @@ public class ServerState {
 			properties = new Properties();
 			properties.load(new FileReader("Configuration.txt"));
 			configuration = new ArrayList<String>();
-
 			for (int i = 0; i < NUMBEROFIPS; i++) {
 				configuration.add(properties.get("IP" + i).toString());
 			}
-			
 			System.out.println("Getting my ip!");
 			String usingIp = null;
-			for(String ip : configuration){
-				for(String my_ip : Network.getAllIps()){
+			for (String ip : configuration) {
+				for (String my_ip : Network.getAllIps()) {
 					System.out.println("Testing " + ip + " with " + my_ip);
-					if(ip.equals(my_ip)){
+					if (ip.equals(my_ip)) {
 						System.out.println("got it");
 						usingIp = ip;
 						break;
 					}
 				}
-				if(usingIp != null) break;
+				if (usingIp != null)
+					break;
 			}
-			
 			System.out.println("My ip: " + usingIp);
 			replica_number = configuration.indexOf(usingIp);
 			status = Status.NORMAL;
@@ -66,7 +64,7 @@ public class ServerState {
 	public ArrayList<String> getConfiguration() {
 		return configuration;
 	}
-	
+
 	public Properties getProperties() {
 		return properties;
 	}

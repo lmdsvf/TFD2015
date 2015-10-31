@@ -17,6 +17,7 @@ public class clienttest {
 
 	public static void main(String[] args) {
 		Properties properties = new Properties();
+		int request_number = 1;
 		try {
 			properties.load(new FileReader("Configuration.txt"));
 		} catch (FileNotFoundException e) {
@@ -31,7 +32,8 @@ public class clienttest {
 				Integer.parseInt(properties.getProperty("PClient")));
 		try {
 			Message m = new Message(MessageType.REQUEST, "Vai trabalhar!",
-					InetAddress.getLocalHost().getHostAddress().toString(), 3);
+					InetAddress.getLocalHost().getHostAddress().toString(),
+					request_number);
 			net.send(m, InetAddress.getByName(properties.getProperty("IP0")),
 					Integer.parseInt(properties.getProperty("PClient")));
 

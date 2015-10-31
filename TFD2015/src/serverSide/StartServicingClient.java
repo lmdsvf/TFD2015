@@ -42,7 +42,6 @@ public class StartServicingClient extends Thread {
 		while (true) { // espera q venha clients
 			System.out.println("Waiting for clients...");
 			DatagramPacket data = server.receive();
-
 			if (data != null) // se nao fez timeout
 				new DealWithClient(data).start();
 			else
@@ -55,15 +54,19 @@ public class StartServicingClient extends Thread {
 	private class DealWithClient extends Thread {
 
 		private Message msg;
-		private String clientName;
 		private InetAddress clientIP;
 		private int portDestination;
-		private int clientPort;
+		private static final int INCIALOPNUMBERVALUEINTUPLE = 0;
+		private static final String INCIALRESULTVALUEINTUPLE = "";
 
 		private DealWithClient(DatagramPacket data) {
 			clientIP = data.getAddress();
 			portDestination = data.getPort();
 			this.msg = Network.networkToMessage(data);
+			state.getClientTable().put(
+					msg.getClient_Id(),
+					new Tuple(INCIALOPNUMBERVALUEINTUPLE,
+							INCIALRESULTVALUEINTUPLE));
 		}
 
 		@Override
@@ -73,7 +76,6 @@ public class StartServicingClient extends Thread {
 			switch (msg.getType()) {
 			case REQUEST:
 				// send prepare to all backups
-				Message sm = new Message(MessageType.PREPARE, 12548, msg, 1, 0);
 				Message prepare = new Message(MessageType.PREPARE, 34, 43,
 						"YUP!");
 				try {
@@ -83,7 +85,6 @@ public class StartServicingClient extends Thread {
 										"PServer")));
 						System.out.println("Sended to: " + ip);
 					}
-
 				} catch (NumberFormatException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -113,8 +114,13 @@ public class StartServicingClient extends Thread {
 				//
 				// ok++;
 				// }
+				state.getClientTable().get(clientIP.getHostAddress())
+						.setOp_number(msg.getOperation_number());
+				state.getClientTable().get(clientIP.getHostAddress())
+						.setResult("Result" + msg.getOperation_number());
 				Message reply = new Message(MessageType.REPLY, 0,
-						msg.getRequest_Number(), "result");
+						msg.getRequest_Number(), "result"
+								+ msg.getOperation_number());
 				server.send(reply, clientIP, portDestination);
 				break;
 			default:

@@ -4,9 +4,10 @@ public class Tuple {
 	private int op_number;
 	private int executed;
 	private String result;
-	
-	public Tuple(){
-		
+
+	public Tuple(int op, String r) {
+		this.op_number = op;
+		this.result = r;
 	}
 
 	public int getOp_number() {
@@ -32,6 +33,5 @@ public class Tuple {
 	public void setResult(String result) {
 		this.result = result;
 	}
-	
-	
+
 }
