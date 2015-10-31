@@ -1,12 +1,8 @@
 package serverSide;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Properties;
 
 import message.Message;
 import message.MessageType;
@@ -53,10 +49,14 @@ public class StartServicingClient extends Thread {
 			clientIP = data.getAddress();
 			portDestination = data.getPort();
 			this.msg = Network.networkToMessage(data);
-			state.getClientTable().put(
-					msg.getClient_Id(),
-					new Tuple(INCIALOPNUMBERVALUEINTUPLE,
-							INCIALRESULTVALUEINTUPLE));
+			state.op_number_increment();
+			state.getLog().add(this.msg);
+			if (!state.getClientTable().containsKey(msg.getClient_Id())) {
+				state.getClientTable().put(
+						msg.getClient_Id(),
+						new Tuple(INCIALOPNUMBERVALUEINTUPLE,
+								INCIALRESULTVALUEINTUPLE));
+			}
 		}
 
 		@Override
@@ -101,7 +101,6 @@ public class StartServicingClient extends Thread {
 						i++;
 					}
 				}
-
 				// wait for half the prepare_ok message
 				// int ok = 0;
 				// while(ok < (backupServers.size()/2) + 1){

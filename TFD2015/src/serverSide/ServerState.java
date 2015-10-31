@@ -17,7 +17,7 @@ public class ServerState {
 	private Status status;
 	private int op_number = 0;
 	private ArrayList<Message> log; // ver depois o tipo...
-	private int commit_number;
+	private int commit_number = 0;
 
 	private HashMap<String, Tuple> clientTable;
 
@@ -135,5 +135,9 @@ public class ServerState {
 
 	public void commit_number_increment() {
 		this.commit_number = this.commit_number++;
+	}
+
+	public void addMessageToLog(Message newMessage) {
+		this.log.add(newMessage);
 	}
 }

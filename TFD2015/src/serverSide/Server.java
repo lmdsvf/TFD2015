@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -19,11 +20,13 @@ public class Server {
 	private ServerState state;
 	private HashMap<String, DealWithServers> backupServers;
 	private Properties properties;
+	private ArrayList<Message> bufferForMessagesWithToHigherOpNumber;
 
 	public Server() {
 		state = new ServerState();
 		backupServers = new HashMap<String, DealWithServers>();
 		properties = state.getProperties();
+		bufferForMessagesWithToHigherOpNumber = new ArrayList<Message>();
 		try {
 			properties.load(new FileReader("Configuration.txt"));
 		} catch (FileNotFoundException e) {
@@ -48,6 +51,8 @@ public class Server {
 
 	class KeepingPortOpen extends Thread {
 		private Network backUpServer;
+		private static final int INCIALOPNUMBERVALUEINTUPLE = 0;
+		private static final String INCIALRESULTVALUEINTUPLE = "";
 
 		@Override
 		public void run() {
@@ -77,6 +82,14 @@ public class Server {
 				this.rawData = data;
 				this.ipPrimary = data.getAddress();
 				this.msg = Network.networkToMessage(data);
+				// estava aqui mas não sei
+				if (!state.getClientTable().containsKey(msg.getClient_Id())) {
+					state.getClientTable().put(
+							msg.getClient_Id(),
+							new Tuple(INCIALOPNUMBERVALUEINTUPLE,
+									INCIALRESULTVALUEINTUPLE));
+				}
+
 			}
 
 			@Override
@@ -85,12 +98,22 @@ public class Server {
 				case PREPARE:
 					// verificar se o op number
 					System.err.println("Recebeu Pah!");
-					Message prepareOk = new Message(MessageType.PREPARE_OK, 1,
-							1, "Menham");
-					backUpServer
-							.send(prepareOk, ipPrimary,
-									Integer.parseInt(properties
-											.getProperty("PServer")));
+					if (msg.getRequest_Number() > (state.getLog().size() + 1)) {// Temos
+																				// que
+																				// ver
+																				// isto
+																				// melhor
+						bufferForMessagesWithToHigherOpNumber.add(msg);
+					} else {
+						state.op_number_increment();
+						state.getLog().add(this.msg);
+						Message prepareOk = new Message(MessageType.PREPARE_OK,
+								state.getView_number(), state.getOp_number(),
+								"");// Temos que ver isto melhor
+						backUpServer.send(prepareOk, ipPrimary, Integer
+								.parseInt(properties.getProperty("PServer")));
+					}
+
 					break;
 				default:
 					break;
