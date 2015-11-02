@@ -21,6 +21,7 @@ public class Server {
 	private HashMap<String, DealWithServers> backupServers;
 	private Properties properties;
 	private ArrayList<Message> bufferForMessagesWithToHigherOpNumber;
+	private boolean nextMessageDontExistsInBuffer = false;
 
 	public Server() {
 		state = new ServerState();
@@ -138,7 +139,7 @@ public class Server {
 			}
 
 			private void DealingWithBuffer() {
-				boolean nextMessageDontExistsInBuffer = false;
+
 				if (bufferForMessagesWithToHigherOpNumber.size() != 0
 						&& nextMessageDontExistsInBuffer) {
 					ArrayList<Message> aux = new ArrayList<Message>();
