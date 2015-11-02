@@ -139,35 +139,28 @@ public class Server {
 			}
 
 			private void DealingWithBuffer() {
-
-				if (bufferForMessagesWithToHigherOpNumber.size() != 0
-						&& nextMessageDontExistsInBuffer) {
-					ArrayList<Message> aux = new ArrayList<Message>();
-					for (Message m : bufferForMessagesWithToHigherOpNumber) {
-						if (m.getOperation_number() == state.getLog().size() + 1) {
-							Message prepareOk = new Message(
-									MessageType.PREPARE_OK,
-									state.getView_number(),
-									state.getOp_number(), "");// Temos que ver
-																// isto melhor
-							backUpServer.send(prepareOk, ipPrimary,
-									Integer.parseInt(properties
-											.getProperty("PServer")));// Pode
-																		// haver
-																		// um
-																		// problema
-																		// aqui!
-																		// ipPrimary
-						} else {
-							aux.add(m);
-						}
+				ArrayList<Message> aux = new ArrayList<Message>();
+				for (Message m : bufferForMessagesWithToHigherOpNumber) {
+					if (m.getOperation_number() == state.getLog().size() + 1) {
+						Message prepareOk = new Message(MessageType.PREPARE_OK,
+								state.getView_number(), state.getOp_number(),
+								"");// Temos que ver
+									// isto melhor
+						backUpServer.send(prepareOk, ipPrimary, Integer
+								.parseInt(properties.getProperty("PServer")));// Pode
+																				// haver
+																				// um
+																				// problema
+																				// aqui!
+																				// ipPrimary
+					} else {
+						aux.add(m);
 					}
 					if (bufferForMessagesWithToHigherOpNumber.size() != aux
-							.size()) {
+							.size() && aux.size() != 0) {
 						bufferForMessagesWithToHigherOpNumber = aux;
 						DealingWithBuffer();
 					}
-
 				}
 			}
 		}
