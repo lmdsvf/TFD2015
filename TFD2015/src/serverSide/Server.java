@@ -168,8 +168,9 @@ public class Server {
 					} else {
 						bufferForMessagesWithToHigherOpNumber = aux;
 						nextMessageDontExistsInBuffer = false;
+						DealingWithBuffer();
 					}
-					DealingWithBuffer();
+
 				}
 			}
 		}
