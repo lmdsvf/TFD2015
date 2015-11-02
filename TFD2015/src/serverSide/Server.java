@@ -138,7 +138,9 @@ public class Server {
 			}
 
 			private void DealingWithBuffer() {
-				if (bufferForMessagesWithToHigherOpNumber.size() != 0) {
+				boolean nextMessageDontExistsInBuffer = false;
+				if (bufferForMessagesWithToHigherOpNumber.size() != 0
+						&& nextMessageDontExistsInBuffer) {
 					ArrayList<Message> aux = new ArrayList<Message>();
 					for (Message m : bufferForMessagesWithToHigherOpNumber) {
 						if (m.getOperation_number() == state.getLog().size() + 1) {
@@ -159,7 +161,13 @@ public class Server {
 							aux.add(m);
 						}
 					}
-					bufferForMessagesWithToHigherOpNumber = aux;
+					if (bufferForMessagesWithToHigherOpNumber.size() == aux
+							.size()) {
+						nextMessageDontExistsInBuffer = true;
+					} else {
+						bufferForMessagesWithToHigherOpNumber = aux;
+						nextMessageDontExistsInBuffer = false;
+					}
 					DealingWithBuffer();
 				}
 			}
