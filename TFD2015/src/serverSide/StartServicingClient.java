@@ -84,7 +84,7 @@ public class StartServicingClient extends Thread {
 
 		@Override
 		public void run() {
-			// if (server.getSocket().isConnected()) {
+			// if (server.getSocket().isConnected()) {po
 			System.out.println("Received: " + msg.getType());
 			switch (msg.getType()) {
 			case REQUEST:
