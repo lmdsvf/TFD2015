@@ -162,12 +162,9 @@ public class Server {
 							aux.add(m);
 						}
 					}
-					if (bufferForMessagesWithToHigherOpNumber.size() == aux
+					if (bufferForMessagesWithToHigherOpNumber.size() != aux
 							.size()) {
-						nextMessageDontExistsInBuffer = true;
-					} else {
 						bufferForMessagesWithToHigherOpNumber = aux;
-						nextMessageDontExistsInBuffer = false;
 						DealingWithBuffer();
 					}
 
