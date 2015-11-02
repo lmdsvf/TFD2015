@@ -73,6 +73,8 @@ public class StartServicingClient extends Thread {
 
 			if (!state.getClientTable().containsKey(msg.getClient_Id())) {
 				System.out.println("Entrou na criação do tuple!");
+				System.out
+						.println("ClientIp na Criação: " + msg.getClient_Id());
 				state.getClientTable().put(
 						msg.getClient_Id(),
 						new Tuple(INCIALOPNUMBERVALUEINTUPLE,
@@ -86,6 +88,7 @@ public class StartServicingClient extends Thread {
 			System.out.println("Received: " + msg.getType());
 			switch (msg.getType()) {
 			case REQUEST:
+				System.out.println("ClientIp no Request: " + clientIP);
 				if (msg.getRequest_Number() == (state.getClientTable()
 						.get(clientIP).getOp_number() + 1)) {// Temos
 					// que
