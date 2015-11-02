@@ -72,6 +72,7 @@ public class StartServicingClient extends Thread {
 			this.msg = Network.networkToMessage(data);
 
 			if (!state.getClientTable().containsKey(msg.getClient_Id())) {
+				System.out.println("Entrou na criação do tuple!");
 				state.getClientTable().put(
 						msg.getClient_Id(),
 						new Tuple(INCIALOPNUMBERVALUEINTUPLE,

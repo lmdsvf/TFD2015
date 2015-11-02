@@ -14,14 +14,11 @@ import message.MessageType;
 import network.Network;
 
 public class Server {
-	// public static final int PORT = 4567;
-	// public static final int PORT_S = 4568;
 	private Network serversSockets;
 	private ServerState state;
 	private HashMap<String, DealWithServers> backupServers;
 	private Properties properties;
 	private ArrayList<Message> bufferForMessagesWithToHigherOpNumber;
-	private boolean nextMessageDontExistsInBuffer = false;
 
 	public Server() {
 		state = new ServerState();
@@ -31,16 +28,13 @@ public class Server {
 		try {
 			properties.load(new FileReader("Configuration.txt"));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		int mod = state.getView_number() % state.getConfiguration().size();
 		// primario
 		if (mod == state.getReplica_number()) {
-			// new ConnecteToServers().start();
 			new StartServicingClient(state).start();
 			System.out.println("Primario esta Disponivel");
 			// replica
