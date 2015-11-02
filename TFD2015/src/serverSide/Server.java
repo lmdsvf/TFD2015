@@ -97,11 +97,11 @@ public class Server {
 				case PREPARE:
 					// verificar se o op number
 					System.err.println("Recebeu Pah!");
-					if (msg.getRequest_Number() > (state.getLog().size() + 1)) {// Temos
-																				// que
-																				// ver
-																				// isto
-																				// melhor
+					if (msg.getOperation_number() > (state.getLog().size() + 1)) {// Temos
+																					// que
+																					// ver
+																					// isto
+																					// melhor
 						bufferForMessagesWithToHigherOpNumber.add(msg);
 					} else {
 						state.setCommit_number(msg.getCommit_Number());// Não
@@ -119,6 +119,7 @@ public class Server {
 								"");// Temos que ver isto melhor
 						backUpServer.send(prepareOk, ipPrimary, Integer
 								.parseInt(properties.getProperty("PServer")));
+						DealingWithBuffer();
 					}
 					break;
 				case COMMIT:
@@ -133,6 +134,33 @@ public class Server {
 					break;
 				default:
 					break;
+				}
+			}
+
+			private void DealingWithBuffer() {
+				if (bufferForMessagesWithToHigherOpNumber.size() != 0) {
+					ArrayList<Message> aux = new ArrayList<Message>();
+					for (Message m : bufferForMessagesWithToHigherOpNumber) {
+						if (m.getOperation_number() == state.getLog().size() + 1) {
+							Message prepareOk = new Message(
+									MessageType.PREPARE_OK,
+									state.getView_number(),
+									state.getOp_number(), "");// Temos que ver
+																// isto melhor
+							backUpServer.send(prepareOk, ipPrimary,
+									Integer.parseInt(properties
+											.getProperty("PServer")));// Pode
+																		// haver
+																		// um
+																		// problema
+																		// aqui!
+																		// ipPrimary
+						} else {
+							aux.add(m);
+						}
+					}
+					bufferForMessagesWithToHigherOpNumber = aux;
+					DealingWithBuffer();
 				}
 			}
 		}
