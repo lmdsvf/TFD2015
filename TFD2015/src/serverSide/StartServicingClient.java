@@ -90,7 +90,7 @@ public class StartServicingClient extends Thread {
 			case REQUEST:
 				System.out.println("ClientIp no Request: " + clientIP);
 				if (msg.getRequest_Number() == (state.getClientTable()
-						.get(clientIP).getOp_number() + 1)) {// Temos
+						.get(clientIP.getHostAddress()).getOp_number() + 1)) {// Temos
 					// que
 					// ver
 					// isto
