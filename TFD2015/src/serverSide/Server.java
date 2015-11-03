@@ -59,12 +59,11 @@ public class Server {
 				DatagramPacket data = backUpServer.receive();
 				if (data != null) // se nao fez timeout
 					new DealWithServers(data).start();
-				else
+				else {
 					System.out.println("Don't do nothing!");
-				// Message message = server.receive();
-				// state.getClientTable().put(server.getIP().toString(), new
-				// Tuple());
-				// new DealWithServersTest(message).start();
+					// Aqui será o ViewChange
+				}
+
 			}
 		}
 
@@ -90,23 +89,11 @@ public class Server {
 			public void run() {
 				switch (msg.getType()) {
 				case PREPARE:
-					// verificar se o op number
-					System.err.println("Recebeu Pah!");
-					if (msg.getOperation_number() > (state.getLog().size() + 1)) {// Temos
-																					// que
-																					// ver
-																					// isto
-																					// melhor
+					System.err.println("Recebeu!");
+					if (msg.getOperation_number() > (state.getLog().size() + 1)) {
 						bufferForMessagesWithToHigherOpNumber.add(msg);
-					} else {
-						state.setCommit_number(msg.getCommit_Number());// Não
-																		// tenho
-																		// a
-																		// certeza
-																		// se é
-																		// só
-																		// fazer
-																		// isot
+					} else if (msg.getOperation_number() == (state.getLog()
+							.size() + 1)) {
 						state.op_number_increment();
 						state.getLog().add(this.msg);
 						Message prepareOk = new Message(MessageType.PREPARE_OK,
@@ -114,18 +101,14 @@ public class Server {
 								"");// Temos que ver isto melhor
 						backUpServer.send(prepareOk, ipPrimary, Integer
 								.parseInt(properties.getProperty("PServer")));
+						state.setCommit_number(msg.getCommit_Number());
 						DealingWithBuffer();
 					}
 					break;
 				case COMMIT:
-					state.setCommit_number(msg.getCommit_Number());// Não
-					// tenho
-					// a
-					// certeza
-					// se é
-					// só
-					// fazer
-					// isot
+					if (msg.getCommit_Number() > state.getCommit_number()) {
+						// Transfer State
+					}
 					break;
 				default:
 					break;
