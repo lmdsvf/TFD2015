@@ -96,22 +96,31 @@ public class StartServicingClient extends Thread {
 					// isto
 					// melhor
 					// send prepare to all backups
-					System.out.println("Antes da actualização do Request Number do ip:"
-							+ clientIP.getHostAddress()
-							+ " para o valor: "
-							+ state.getClientTable()
-									.get(clientIP.getHostAddress())
-									.getRequest_number());
+					/*
+					 * System.out.println(
+					 * "Antes da actualização do Request Number do ip:" +
+					 * clientIP.getHostAddress() + " para o valor: " +
+					 * state.getClientTable() .get(clientIP.getHostAddress())
+					 * .getRequest_number());
+					 */
+					System.out.println("Operation Number before: "
+							+ state.getOp_number());
 					state.op_number_increment();
+					System.out.println("Operation Number after: "
+							+ state.getOp_number());
+					System.out.println("Log size before: "
+							+ state.getLog().size());
 					state.getLog().add(this.msg);
+					System.out.println("Log size after: "
+							+ state.getLog().size());
 					state.getClientTable().get(clientIP.getHostAddress())
 							.setRequest_number(msg.getRequest_Number());
-					System.out.println("Actualização do Request Number do ip:"
-							+ clientIP.getHostAddress()
-							+ " para o valor: "
-							+ state.getClientTable()
-									.get(clientIP.getHostAddress())
-									.getRequest_number());
+					/*
+					 * System.out.println("Actualização do Request Number do ip:"
+					 * + clientIP.getHostAddress() + " para o valor: " +
+					 * state.getClientTable() .get(clientIP.getHostAddress())
+					 * .getRequest_number());
+					 */
 					Message prepare = new Message(MessageType.PREPARE,
 							state.getView_number(), msg, state.getOp_number(),
 							state.getCommit_number());// temos que ver o op_n e
@@ -158,23 +167,28 @@ public class StartServicingClient extends Thread {
 					//
 					// ok++;
 					// }
-					System.out.println("Antes da actualização do result do ip:"
-							+ clientIP.getHostAddress()
-							+ " para o valor: "
-							+ state.getClientTable()
-									.get(clientIP.getHostAddress())
-									.getResult());
+					/*
+					 * System.out
+					 * .println("Antes da actualização do result do ip:" +
+					 * clientIP.getHostAddress() + " para o valor: " +
+					 * state.getClientTable() .get(clientIP.getHostAddress())
+					 * .getResult());
+					 */
+					System.out.println("Commit number before: "
+							+ state.getCommit_number());
 					state.commit_number_increment();
+					System.out.println("Commit number after: "
+							+ state.getCommit_number());
 					state.getClientTable().get(clientIP.getHostAddress())
 							.setRequest_number(msg.getRequest_Number());
 					state.getClientTable().get(clientIP.getHostAddress())
 							.setResult("Result" + msg.getRequest_Number());
-					System.out.println("Actualização do Result do ip:"
-							+ clientIP.getHostAddress()
-							+ " para o valor: "
-							+ state.getClientTable()
-									.get(clientIP.getHostAddress())
-									.getResult());
+					/*
+					 * System.out .println("Actualização do Result do ip:" +
+					 * clientIP.getHostAddress() + " para o valor: " +
+					 * state.getClientTable() .get(clientIP.getHostAddress())
+					 * .getResult());
+					 */
 					Message reply = new Message(MessageType.REPLY,
 							state.getView_number(), msg.getRequest_Number(),
 							"result" + msg.getRequest_Number());
