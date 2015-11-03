@@ -158,11 +158,23 @@ public class StartServicingClient extends Thread {
 					//
 					// ok++;
 					// }
+					System.out.println("Antes da actualização do result do ip:"
+							+ clientIP.getHostAddress()
+							+ " para o valor: "
+							+ state.getClientTable()
+									.get(clientIP.getHostAddress())
+									.getResult());
 					state.commit_number_increment();
 					state.getClientTable().get(clientIP.getHostAddress())
 							.setRequest_number(msg.getRequest_Number());
 					state.getClientTable().get(clientIP.getHostAddress())
 							.setResult("Result" + msg.getOperation_number());
+					System.out.println("Actualização do Result do ip:"
+							+ clientIP.getHostAddress()
+							+ " para o valor: "
+							+ state.getClientTable()
+									.get(clientIP.getHostAddress())
+									.getResult());
 					Message reply = new Message(MessageType.REPLY,
 							state.getView_number(), msg.getRequest_Number(),
 							"result" + msg.getRequest_Number());
