@@ -153,14 +153,14 @@ public class StartServicingClient extends Thread {
 							"result" + msg.getRequest_Number());
 					server.send(reply, clientIP, portDestination);
 				} else if (msg.getRequest_Number() == (state.getClientTable()
-						.get(clientIP).getOp_number())) {// Se for o mesmo
+						.get(clientIP.getHostAddress()).getOp_number())) {// Se for o mesmo
 															// requestNumber, o
 															// ultimo
 															// requestNumber,
 															// envia o resultado
 					Message reply = new Message(MessageType.REPLY,
 							state.getView_number(), msg.getRequest_Number(),
-							state.getClientTable().get(clientIP).getResult());
+							state.getClientTable().get(clientIP.getHostAddress()).getResult());
 					server.send(reply, clientIP, portDestination);
 				}
 
