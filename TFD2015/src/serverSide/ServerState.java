@@ -130,11 +130,11 @@ public class ServerState {
 	}
 
 	public void op_number_increment() {
-		this.op_number = this.op_number++;
+		this.op_number += 1;
 	}
 
 	public void commit_number_increment() {
-		this.commit_number = this.commit_number++;
+		this.commit_number += 1;
 	}
 
 	public void addMessageToLog(Message newMessage) {
