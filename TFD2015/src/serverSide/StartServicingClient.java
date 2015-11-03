@@ -168,7 +168,7 @@ public class StartServicingClient extends Thread {
 					state.getClientTable().get(clientIP.getHostAddress())
 							.setRequest_number(msg.getRequest_Number());
 					state.getClientTable().get(clientIP.getHostAddress())
-							.setResult("Result" + msg.getOperation_number());
+							.setResult("Result" + msg.getRequest_Number());
 					System.out.println("Actualização do Result do ip:"
 							+ clientIP.getHostAddress()
 							+ " para o valor: "
