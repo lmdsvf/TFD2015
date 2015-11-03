@@ -107,10 +107,13 @@ public class StartServicingClient extends Thread {
 														// commit_n
 					try {
 						for (String ip : state.getConfiguration()) {
+							// if(ip.equals(InetAddress.get)){
 							server.send(prepare, InetAddress.getByName(ip),
 									Integer.parseInt(state.getProperties()
 											.getProperty("PServer")));
 							System.out.println("Sended to: " + ip);
+							// }Isto tem que ser feito Já
+							// voltamos!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 						}
 					} catch (NumberFormatException e) {
 						// TODO Auto-generated catch block
@@ -122,7 +125,7 @@ public class StartServicingClient extends Thread {
 					// for (DealWithServers ds : backupServers.values()) {
 					// ds.getNetwork().send(sm);
 					// }
-					int i = 0;
+					int i = 1;
 					int majority = ((state.getConfiguration().size() / 2) + 1);
 					System.err.println("Majority: " + majority);
 					while (i < majority) {
@@ -153,14 +156,18 @@ public class StartServicingClient extends Thread {
 							"result" + msg.getRequest_Number());
 					server.send(reply, clientIP, portDestination);
 				} else if (msg.getRequest_Number() == (state.getClientTable()
-						.get(clientIP.getHostAddress()).getOp_number())) {// Se for o mesmo
-															// requestNumber, o
-															// ultimo
-															// requestNumber,
-															// envia o resultado
+						.get(clientIP.getHostAddress()).getOp_number())) {// Se
+																			// for
+																			// o
+																			// mesmo
+					// requestNumber, o
+					// ultimo
+					// requestNumber,
+					// envia o resultado
 					Message reply = new Message(MessageType.REPLY,
 							state.getView_number(), msg.getRequest_Number(),
-							state.getClientTable().get(clientIP.getHostAddress()).getResult());
+							state.getClientTable()
+									.get(clientIP.getHostAddress()).getResult());
 					server.send(reply, clientIP, portDestination);
 				}
 
