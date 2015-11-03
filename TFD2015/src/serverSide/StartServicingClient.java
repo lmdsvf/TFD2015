@@ -90,16 +90,28 @@ public class StartServicingClient extends Thread {
 			case REQUEST:
 				System.out.println("ClientIp no Request: " + clientIP);
 				if (msg.getRequest_Number() == (state.getClientTable()
-						.get(clientIP.getHostAddress()).getOp_number() + 1)) {// Temos
+						.get(clientIP.getHostAddress()).getRequest_number() + 1)) {// Temos
 					// que
 					// ver
 					// isto
 					// melhor
 					// send prepare to all backups
+					System.out.println("Antes da actualização do Request Number do ip:"
+							+ clientIP.getHostAddress()
+							+ " para o valor: "
+							+ state.getClientTable()
+									.get(clientIP.getHostAddress())
+									.getRequest_number());
 					state.op_number_increment();
 					state.getLog().add(this.msg);
 					state.getClientTable().get(clientIP.getHostAddress())
-							.setOp_number(msg.getRequest_Number());
+							.setRequest_number(msg.getRequest_Number());
+					System.out.println("Actualização do Request Number do ip:"
+							+ clientIP.getHostAddress()
+							+ " para o valor: "
+							+ state.getClientTable()
+									.get(clientIP.getHostAddress())
+									.getRequest_number());
 					Message prepare = new Message(MessageType.PREPARE,
 							state.getView_number(), msg, state.getOp_number(),
 							state.getCommit_number());// temos que ver o op_n e
@@ -148,7 +160,7 @@ public class StartServicingClient extends Thread {
 					// }
 					state.commit_number_increment();
 					state.getClientTable().get(clientIP.getHostAddress())
-							.setOp_number(msg.getRequest_Number());
+							.setRequest_number(msg.getRequest_Number());
 					state.getClientTable().get(clientIP.getHostAddress())
 							.setResult("Result" + msg.getOperation_number());
 					Message reply = new Message(MessageType.REPLY,
@@ -156,10 +168,10 @@ public class StartServicingClient extends Thread {
 							"result" + msg.getRequest_Number());
 					server.send(reply, clientIP, portDestination);
 				} else if (msg.getRequest_Number() == (state.getClientTable()
-						.get(clientIP.getHostAddress()).getOp_number())) {// Se
-																			// for
-																			// o
-																			// mesmo
+						.get(clientIP.getHostAddress()).getRequest_number())) {// Se
+																				// for
+																				// o
+																				// mesmo
 					// requestNumber, o
 					// ultimo
 					// requestNumber,

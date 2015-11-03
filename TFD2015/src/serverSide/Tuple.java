@@ -1,21 +1,21 @@
 package serverSide;
 
 public class Tuple {
-	private int op_number;
+	private int request_number;
 	private int executed;
 	private String result;
 
 	public Tuple(int op, String r) {
-		this.op_number = op;
+		this.request_number = op;
 		this.result = r;
 	}
 
-	public int getOp_number() {
-		return op_number;
+	public int getRequest_number() {
+		return request_number;
 	}
 
-	public void setOp_number(int op_number) {
-		this.op_number = op_number;
+	public void setRequest_number(int op_number) {
+		this.request_number = op_number;
 	}
 
 	public int getExecuted() {
