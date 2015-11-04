@@ -2,7 +2,6 @@ package clientSide;
 
 import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
@@ -26,15 +25,16 @@ public class Client {
 	private String serverAddress;
 	private int port;
 	private Network net;
+	private static final int SIZE = 300;
 
 	public Client(final String op) {
 		readConfiguration();
 		state = new ClientState();
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(300, 300);
+		frame.setSize(SIZE, SIZE);
 		Container container = frame.getContentPane();
-		container.setSize(300, 300);
+		container.setSize(SIZE, SIZE);
 		container.setLayout(new FlowLayout());
 		JButton button = new JButton("New Request");
 		container.add(button);
@@ -46,7 +46,6 @@ public class Client {
 			}
 		});
 		frame.setVisible(true);
-
 	}
 
 	private void readConfiguration() {
@@ -56,23 +55,14 @@ public class Client {
 			serverAddress = properties.getProperty("IP0");
 			port = Integer.parseInt(properties.getProperty("PClient"));
 			net = new Network(serverAddress, port);
-			System.err.println("Aqui vai: " + net.getLocalIP());
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	public void execute(String op) {
-		/*
-		 * try { //System.out.println(InetAddress.getHostAddress().toString());
-		 * } catch (UnknownHostException e1) { // TODO Auto-generated catch
-		 * block e1.printStackTrace(); }
-		 */
-
 		state.setIpAddress(net.getLocalIP() + ":" + net.getLocalPort());
 		state.request_number_increment();
 		Message msg = new Message(MessageType.REQUEST, op,
@@ -80,6 +70,7 @@ public class Client {
 		try {
 			net.send(msg, InetAddress.getByName(serverAddress), port);
 			DatagramPacket data = net.receive();
+			/***** Broadcast *****/
 			/*
 			 * if (data == null) { for (String ip : state.getConfiguration()) {
 			 * Network newNet = new Network(ip, port); newNet.receive(); } }
@@ -87,19 +78,13 @@ public class Client {
 			Message reply = Network.networkToMessage(data);
 			System.out.println(reply.getResult());
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	public static void main(String[] args) throws SocketException {
-
-		int nClients = 1;
-		String operation = "echo Ola Mundo!";
-		for (int i = 0; i < nClients; i++) {
-			new Client(operation);
-			System.out.println("New Client Created!");
-		}
+		new Client("Echo Olá Mundo!");
+		System.out.println("New Client Created!");
 
 	}
 

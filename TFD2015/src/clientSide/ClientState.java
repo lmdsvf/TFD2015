@@ -5,14 +5,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 
-import message.Message;
-import network.Network;
 import serverSide.ServerState;
-import serverSide.Status;
-import serverSide.Tuple;
 
 public class ClientState {
 	private String id;
@@ -26,7 +21,6 @@ public class ClientState {
 		try {
 			this.ipAddress = InetAddress.getLocalHost().toString();
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		try {
@@ -38,12 +32,9 @@ public class ClientState {
 				configuration.add(properties.get("IP" + i).toString());
 			}
 			System.out.println("Getting my ip!");
-
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

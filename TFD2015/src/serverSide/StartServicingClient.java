@@ -43,6 +43,7 @@ public class StartServicingClient extends Thread {
 					System.err.println("Message " + u + ": "
 							+ received.getType() + " from Client:"
 							+ received.getClient_Id());
+					u++;
 				}
 				/********/
 				System.out.println("Sending keep_Alive Messages to backups!");

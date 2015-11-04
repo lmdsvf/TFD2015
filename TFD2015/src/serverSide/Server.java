@@ -58,15 +58,18 @@ public class Server {
 				else {
 					/**** Checking ****/
 					System.err.println("Current Operation Number: "
-							+ state.getOp_number() + "\n Current Commit Number: "
+							+ state.getOp_number()
+							+ "\n Current Commit Number: "
 							+ state.getCommit_number()
-							+ " \n Current View Number: " + state.getView_number()
-							+ " \n Curent Log size: " + state.getLog().size());
+							+ " \n Current View Number: "
+							+ state.getView_number() + " \n Curent Log size: "
+							+ state.getLog().size());
 					int u = 0;
 					for (Message received : state.getLog()) {
 						System.err.println("Message " + u + ": "
 								+ received.getType() + " from Client:"
 								+ received.getClient_Id());
+						u++;
 					}
 					/********/
 					System.out.println("Don't do nothing!");
@@ -107,7 +110,7 @@ public class Server {
 							.size() + 1)) {
 						System.out.println("Operation Number expected!");
 						state.op_number_increment();
-						state.getLog().add(this.msg);
+						state.getLog().add(this.msg.getClient_Message());
 						if (msg.getCommit_Number() == state.getCommit_number() + 1) {
 							state.setCommit_number(msg.getCommit_Number());
 							/* Ver depois isto */
