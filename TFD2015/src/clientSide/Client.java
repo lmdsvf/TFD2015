@@ -56,6 +56,7 @@ public class Client {
 			serverAddress = properties.getProperty("IP0");
 			port = Integer.parseInt(properties.getProperty("PClient"));
 			net = new Network(serverAddress, port);
+			System.err.println("Aqui vai: " + net.getIP().getHostAddress());
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
