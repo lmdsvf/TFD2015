@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 
 import message.Message;
@@ -14,15 +13,12 @@ import message.MessageType;
 import network.Network;
 
 public class Server {
-	private Network serversSockets;
 	private ServerState state;
-	private HashMap<String, DealWithServers> backupServers;
 	private Properties properties;
 	private ArrayList<Message> bufferForMessagesWithToHigherOpNumber;
 
 	public Server() {
 		state = new ServerState();
-		backupServers = new HashMap<String, DealWithServers>();
 		properties = state.getProperties();
 		bufferForMessagesWithToHigherOpNumber = new ArrayList<Message>();
 		try {
@@ -68,23 +64,21 @@ public class Server {
 		}
 
 		class DealWithServers extends Thread {
-			private DatagramPacket rawData;
 			private Message msg;
 			private InetAddress ipPrimary;
 
 			public DealWithServers(DatagramPacket data) {
-				this.rawData = data;
 				this.ipPrimary = data.getAddress();
 				this.msg = Network.networkToMessage(data);
-				// estava aqui mas não sei
-
 			}
 
 			@Override
 			public void run() {
 				switch (msg.getType()) {
 				case PREPARE:
-					System.err.println("Recebeu!");
+					System.out
+							.println("Prepare Messge Received with Request message from client: "
+									+ msg.getClient_Message().getClient_Id());
 					if (!state.getClientTable().containsKey(
 							msg.getClient_Message().getClient_Id())) {
 						state.getClientTable().put(
@@ -93,9 +87,12 @@ public class Server {
 										INCIALRESULTVALUEINTUPLE));
 					}
 					if (msg.getOperation_number() > (state.getLog().size() + 1)) {
+						System.out
+								.println("Operation Number recived to high! Went to the Buffer!");
 						bufferForMessagesWithToHigherOpNumber.add(msg);
 					} else if (msg.getOperation_number() == (state.getLog()
 							.size() + 1)) {
+						System.out.println("Operation Number expected!");
 						state.op_number_increment();
 						state.getLog().add(this.msg);
 						if (msg.getCommit_Number() == state.getCommit_number() + 1) {
