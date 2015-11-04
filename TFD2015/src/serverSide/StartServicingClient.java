@@ -209,9 +209,9 @@ public class StartServicingClient extends Thread {
 							state.getView_number(), msg.getRequest_Number(),
 							"result" + msg.getRequest_Number());
 					server.send(reply, clientIP, portDestination);
-					state.getClientTable().get(clientIP.getHostAddress())
+					state.getClientTable().get(clientId)
 							.setRequest_number(msg.getRequest_Number());
-					state.getClientTable().get(clientIP.getHostAddress())
+					state.getClientTable().get(clientId)
 							.setResult("Result" + msg.getRequest_Number());
 					/*
 					 * System.out .println("Actualização do Result do ip:" +
@@ -221,7 +221,7 @@ public class StartServicingClient extends Thread {
 					 */
 
 				} else if (msg.getRequest_Number() == (state.getClientTable()
-						.get(clientIP.getHostAddress()).getRequest_number())) {// Se
+						.get(clientId).getRequest_number())) {// Se
 																				// for
 																				// o
 																				// mesmo
@@ -232,7 +232,7 @@ public class StartServicingClient extends Thread {
 					Message reply = new Message(MessageType.REPLY,
 							state.getView_number(), msg.getRequest_Number(),
 							state.getClientTable()
-									.get(clientIP.getHostAddress()).getResult());
+									.get(clientId).getResult());
 					server.send(reply, clientIP, portDestination);
 				}
 				break;
