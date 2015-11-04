@@ -38,7 +38,6 @@ public class Network {
 		getProperties();
 		try {
 			IPaddress = InetAddress.getByName(address);
-			System.out.println(IPaddress.getHostAddress());
 			socket = new DatagramSocket();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -149,14 +148,14 @@ public class Network {
         return allAddresses;
 	}
 	
-	public DatagramSocket getSocket() {
-		return socket;
+	public InetAddress getLocalIP() {
+		return socket.getLocalAddress();
 	}
 
-	public void setSocket(DatagramSocket socket) {
-		this.socket = socket;
+	public int getLocalPort(){
+		return socket.getLocalPort();
 	}
-
+	
 	public int getTimeout() {
 		return timeout;
 	}

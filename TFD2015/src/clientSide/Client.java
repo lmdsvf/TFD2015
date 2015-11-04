@@ -56,7 +56,7 @@ public class Client {
 			serverAddress = properties.getProperty("IP0");
 			port = Integer.parseInt(properties.getProperty("PClient"));
 			net = new Network(serverAddress, port);
-			System.err.println("Aqui vai: " + net.getIP().getHostAddress());
+			System.err.println("Aqui vai: " + net.getLocalIP());
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -73,8 +73,7 @@ public class Client {
 		 * block e1.printStackTrace(); }
 		 */
 
-		state.setIpAddress(net.getSocket().getLocalAddress() + ":"
-				+ net.getSocket().getLocalPort());
+		state.setIpAddress(net.getLocalIP() + ":" + net.getLocalPort());
 		state.request_number_increment();
 		Message msg = new Message(MessageType.REQUEST, op,
 				state.getIpAddress(), state.getRequest_number());
