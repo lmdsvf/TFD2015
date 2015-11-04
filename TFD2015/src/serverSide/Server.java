@@ -77,12 +77,7 @@ public class Server {
 				this.ipPrimary = data.getAddress();
 				this.msg = Network.networkToMessage(data);
 				// estava aqui mas não sei
-				if (!state.getClientTable().containsKey(msg.getClient_Id())) {
-					state.getClientTable().put(
-							msg.getClient_Id(),
-							new Tuple(INCIALOPNUMBERVALUEINTUPLE,
-									INCIALRESULTVALUEINTUPLE));
-				}
+
 			}
 
 			@Override
@@ -90,6 +85,13 @@ public class Server {
 				switch (msg.getType()) {
 				case PREPARE:
 					System.err.println("Recebeu!");
+					if (!state.getClientTable().containsKey(
+							msg.getClient_Message().getClient_Id())) {
+						state.getClientTable().put(
+								msg.getClient_Message().getClient_Id(),
+								new Tuple(INCIALOPNUMBERVALUEINTUPLE,
+										INCIALRESULTVALUEINTUPLE));
+					}
 					if (msg.getOperation_number() > (state.getLog().size() + 1)) {
 						bufferForMessagesWithToHigherOpNumber.add(msg);
 					} else if (msg.getOperation_number() == (state.getLog()

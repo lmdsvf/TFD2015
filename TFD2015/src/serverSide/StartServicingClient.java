@@ -70,13 +70,13 @@ public class StartServicingClient extends Thread {
 			clientId = clientIP.getHostAddress() + ":" + portDestination;
 			System.err.println("ClientId:" + clientId);
 			this.msg = Network.networkToMessage(data);
-
+			this.msg.setClient_Id(clientId);
 			if (!state.getClientTable().containsKey(msg.getClient_Id())) {
 				System.out.println("Entrou na criação do tuple!");
 				System.out
 						.println("ClientIp na Criação: " + msg.getClient_Id());
 				state.getClientTable().put(
-						/* msg.getClient_Id() */clientIP.getHostAddress(),
+						msg.getClient_Id(),
 						new Tuple(INCIALOPNUMBERVALUEINTUPLE,
 								INCIALRESULTVALUEINTUPLE));
 			}
@@ -93,7 +93,7 @@ public class StartServicingClient extends Thread {
 				 * clientIP.getHostAddress());
 				 */
 				if (msg.getRequest_Number() == (state.getClientTable()
-						.get(clientIP.getHostAddress()).getRequest_number() + 1)) {// Temos
+						.get(clientId).getRequest_number() + 1)) {// Temos
 					// que
 					// ver
 					// isto
@@ -123,9 +123,9 @@ public class StartServicingClient extends Thread {
 					 * System.out.println("Log size after: " +
 					 * state.getLog().size());
 					 */
-					state.getClientTable().get(clientIP.getHostAddress())
+					state.getClientTable().get(clientId)
 							.setRequest_number(msg.getRequest_Number());
-					state.getClientTable().get(clientIP.getHostAddress())
+					state.getClientTable().get(clientId)
 							.setResult(INCIALRESULTVALUEINTUPLE);
 					/*
 					 * System.out.println("Actualização do Request Number do ip:"
