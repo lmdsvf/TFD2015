@@ -73,7 +73,7 @@ public class StartServicingClient extends Thread {
 				System.out
 						.println("ClientIp na Criação: " + msg.getClient_Id());
 				state.getClientTable().put(
-						msg.getClient_Id(),
+						/* msg.getClient_Id() */clientIP.getHostAddress(),
 						new Tuple(INCIALOPNUMBERVALUEINTUPLE,
 								INCIALRESULTVALUEINTUPLE));
 			}
@@ -85,7 +85,8 @@ public class StartServicingClient extends Thread {
 			System.out.println("Received: " + msg.getType());
 			switch (msg.getType()) {
 			case REQUEST:
-				System.out.println("ClientIp no Request: " + clientIP);
+				System.out.println("ClientIp no Request: "
+						+ clientIP.getHostAddress());
 				if (msg.getRequest_Number() == (state.getClientTable()
 						.get(clientIP.getHostAddress()).getRequest_number() + 1)) {// Temos
 					// que
