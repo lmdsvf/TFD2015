@@ -59,6 +59,7 @@ public class StartServicingClient extends Thread {
 
 		private Message msg;
 		private InetAddress clientIP;
+		private String clientId;
 		private int portDestination;
 		private static final int INCIALOPNUMBERVALUEINTUPLE = 0;
 		private static final String INCIALRESULTVALUEINTUPLE = "";
@@ -66,6 +67,8 @@ public class StartServicingClient extends Thread {
 		private DealWithClient(DatagramPacket data) {
 			clientIP = data.getAddress();
 			portDestination = data.getPort();
+			clientId = clientIP.getHostAddress() + ":" + portDestination;
+			System.err.println("ClientId:" + clientId);
 			this.msg = Network.networkToMessage(data);
 
 			if (!state.getClientTable().containsKey(msg.getClient_Id())) {
