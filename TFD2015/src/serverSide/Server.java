@@ -96,17 +96,44 @@ public class Server {
 							.size() + 1)) {
 						state.op_number_increment();
 						state.getLog().add(this.msg);
+						if (msg.getCommit_Number() == state.getCommit_number() + 1) {
+							state.setCommit_number(msg.getCommit_Number());
+							/* Ver depois isto */
+							state.getClientTable()
+									.get(msg.getClient_Message().getClient_Id())
+									.setResult(
+											"result"
+													+ msg.getClient_Message()
+															.getRequest_Number());
+						} else if (msg.getCommit_Number() > state
+								.getCommit_number() + 1) {
+							// Transfer State
+						}// Falar com o professor
+						Message messageOfClient = msg.getClient_Message();
+						state.getClientTable()
+								.get(messageOfClient.getClient_Id())
+								.setRequest_number(
+										messageOfClient.getRequest_Number());
+						state.getClientTable()
+								.get(messageOfClient.getClient_Id())
+								.setResult(
+										"result"
+												+ messageOfClient
+														.getRequest_Number());
 						Message prepareOk = new Message(MessageType.PREPARE_OK,
 								state.getView_number(), state.getOp_number(),
-								"");// Temos que ver isto melhor
+								state.getUsingIp());
 						backUpServer.send(prepareOk, ipPrimary, Integer
 								.parseInt(properties.getProperty("PServer")));
-						state.setCommit_number(msg.getCommit_Number());
 						DealingWithBuffer();
 					}
 					break;
 				case COMMIT:
-					if (msg.getCommit_Number() > state.getCommit_number()) {
+					if (msg.getCommit_Number() == state.getCommit_number() + 1) {
+						state.setCommit_number(msg.getCommit_Number());
+						/* E aqui? */
+					} else if (msg.getCommit_Number() > state
+							.getCommit_number() + 1) {
 						// Transfer State
 					}
 					break;

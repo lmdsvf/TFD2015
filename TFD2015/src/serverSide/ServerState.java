@@ -18,11 +18,12 @@ public class ServerState {
 	private int op_number = 0;
 	private ArrayList<Message> log; // ver depois o tipo...
 	private int commit_number = 0;
+	private String usingIp;
 
 	private HashMap<String, Tuple> clientTable;
 
 	private Properties properties;
-	private static final int NUMBEROFIPS = 3;
+	public static final int NUMBEROFIPS = 3;
 
 	public ServerState() {
 		try {
@@ -33,7 +34,7 @@ public class ServerState {
 				configuration.add(properties.get("IP" + i).toString());
 			}
 			System.out.println("Getting my ip!");
-			String usingIp = null;
+			usingIp = null;
 			for (String ip : configuration) {
 				for (String my_ip : Network.getAllIps()) {
 					System.out.println("Testing " + ip + " with " + my_ip);
@@ -59,6 +60,10 @@ public class ServerState {
 			e.printStackTrace();
 		}
 
+	}
+
+	public String getUsingIp() {
+		return usingIp;
 	}
 
 	public ArrayList<String> getConfiguration() {

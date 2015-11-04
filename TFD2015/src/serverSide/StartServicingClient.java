@@ -52,9 +52,6 @@ public class StartServicingClient extends Thread {
 					e.printStackTrace();
 				}
 			}
-
-			// state.getClientTable().put(server.getIP().toString(), new
-			// Tuple());
 		}
 	}
 
@@ -96,6 +93,7 @@ public class StartServicingClient extends Thread {
 					// isto
 					// melhor
 					// send prepare to all backups
+					int operationNumberOfTheMsg = msg.getOperation_number();
 					/*
 					 * System.out.println(
 					 * "Antes da actualização do Request Number do ip:" +
@@ -115,6 +113,8 @@ public class StartServicingClient extends Thread {
 							+ state.getLog().size());
 					state.getClientTable().get(clientIP.getHostAddress())
 							.setRequest_number(msg.getRequest_Number());
+					state.getClientTable().get(clientIP.getHostAddress())
+							.setResult(INCIALRESULTVALUEINTUPLE);
 					/*
 					 * System.out.println("Actualização do Request Number do ip:"
 					 * + clientIP.getHostAddress() + " para o valor: " +
@@ -149,15 +149,25 @@ public class StartServicingClient extends Thread {
 					int i = 1;
 					int majority = ((state.getConfiguration().size() / 2) + 1);
 					System.err.println("Majority: " + majority);
+					ArrayList<String> usingIps = new ArrayList<String>();
 					while (i < majority) {
 						DatagramPacket prepareOk = serverToserver.receive();
+						if (prepareOk == null) {
+							continue;
+						}
 						System.out.println("BackUp ip: "
 								+ prepareOk.getAddress());
 						Message newPrepareOk = Network
 								.networkToMessage(prepareOk);
 						if (newPrepareOk.getType().equals(
-								MessageType.PREPARE_OK)) {
+								MessageType.PREPARE_OK)
+								&& newPrepareOk.getOperation_number() == operationNumberOfTheMsg
+								&& state.getConfiguration().contains(
+										newPrepareOk.getBackUp_Ip())
+								&& !usingIps.contains(newPrepareOk
+										.getBackUp_Ip())) {
 							System.out.println("Recebe AQUI!!!!!!!!");
+							usingIps.add(newPrepareOk.getBackUp_Ip());
 							i++;
 						}
 					}
@@ -179,6 +189,10 @@ public class StartServicingClient extends Thread {
 					state.commit_number_increment();
 					System.out.println("Commit number after: "
 							+ state.getCommit_number());
+					Message reply = new Message(MessageType.REPLY,
+							state.getView_number(), msg.getRequest_Number(),
+							"result" + msg.getRequest_Number());
+					server.send(reply, clientIP, portDestination);
 					state.getClientTable().get(clientIP.getHostAddress())
 							.setRequest_number(msg.getRequest_Number());
 					state.getClientTable().get(clientIP.getHostAddress())
@@ -189,10 +203,7 @@ public class StartServicingClient extends Thread {
 					 * state.getClientTable() .get(clientIP.getHostAddress())
 					 * .getResult());
 					 */
-					Message reply = new Message(MessageType.REPLY,
-							state.getView_number(), msg.getRequest_Number(),
-							"result" + msg.getRequest_Number());
-					server.send(reply, clientIP, portDestination);
+
 				} else if (msg.getRequest_Number() == (state.getClientTable()
 						.get(clientIP.getHostAddress()).getRequest_number())) {// Se
 																				// for
@@ -208,7 +219,6 @@ public class StartServicingClient extends Thread {
 									.get(clientIP.getHostAddress()).getResult());
 					server.send(reply, clientIP, portDestination);
 				}
-
 				break;
 			default:
 				break;
