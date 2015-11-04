@@ -25,7 +25,6 @@ public class ClientState {
 	public ClientState() {
 		try {
 			this.ipAddress = InetAddress.getLocalHost().toString();
-			System.out.println("1º " + ipAddress);
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

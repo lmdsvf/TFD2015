@@ -75,7 +75,6 @@ public class Client {
 
 		state.setIpAddress(net.getSocket().getLocalAddress() + ":"
 				+ net.getSocket().getLocalPort());
-		System.out.println("o que vem aqui: " + state.toString());
 		state.request_number_increment();
 		Message msg = new Message(MessageType.REQUEST, op,
 				state.getIpAddress(), state.getRequest_number());

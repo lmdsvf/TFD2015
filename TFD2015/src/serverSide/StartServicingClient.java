@@ -85,8 +85,10 @@ public class StartServicingClient extends Thread {
 			System.out.println("Received: " + msg.getType());
 			switch (msg.getType()) {
 			case REQUEST:
-				System.out.println("ClientIp no Request: "
-						+ clientIP.getHostAddress());
+				/*
+				 * System.out.println("ClientIp no Request: " +
+				 * clientIP.getHostAddress());
+				 */
 				if (msg.getRequest_Number() == (state.getClientTable()
 						.get(clientIP.getHostAddress()).getRequest_number() + 1)) {// Temos
 					// que
@@ -102,16 +104,22 @@ public class StartServicingClient extends Thread {
 					 * state.getClientTable() .get(clientIP.getHostAddress())
 					 * .getRequest_number());
 					 */
-					System.out.println("Operation Number before: "
-							+ state.getOp_number());
+					/*
+					 * System.out.println("Operation Number before: " +
+					 * state.getOp_number());
+					 */
 					state.op_number_increment();
-					System.out.println("Operation Number after: "
-							+ state.getOp_number());
-					System.out.println("Log size before: "
-							+ state.getLog().size());
+					/*
+					 * System.out.println("Operation Number after: " +
+					 * state.getOp_number());
+					 * System.out.println("Log size before: " +
+					 * state.getLog().size());
+					 */
 					state.getLog().add(this.msg);
-					System.out.println("Log size after: "
-							+ state.getLog().size());
+					/*
+					 * System.out.println("Log size after: " +
+					 * state.getLog().size());
+					 */
 					state.getClientTable().get(clientIP.getHostAddress())
 							.setRequest_number(msg.getRequest_Number());
 					state.getClientTable().get(clientIP.getHostAddress())
@@ -149,7 +157,7 @@ public class StartServicingClient extends Thread {
 					// }
 					int i = 1;
 					int majority = ((state.getConfiguration().size() / 2) + 1);
-					System.err.println("Majority: " + majority);
+					// System.err.println("Majority: " + majority);
 					ArrayList<String> usingIps = new ArrayList<String>();
 					while (i < majority) {
 						DatagramPacket prepareOk = serverToserver.receive();
@@ -185,11 +193,15 @@ public class StartServicingClient extends Thread {
 					 * state.getClientTable() .get(clientIP.getHostAddress())
 					 * .getResult());
 					 */
-					System.out.println("Commit number before: "
-							+ state.getCommit_number());
+					/*
+					 * System.out.println("Commit number before: " +
+					 * state.getCommit_number());
+					 */
 					state.commit_number_increment();
-					System.out.println("Commit number after: "
-							+ state.getCommit_number());
+					/*
+					 * System.out.println("Commit number after: " +
+					 * state.getCommit_number());
+					 */
 					Message reply = new Message(MessageType.REPLY,
 							state.getView_number(), msg.getRequest_Number(),
 							"result" + msg.getRequest_Number());
