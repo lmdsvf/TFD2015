@@ -16,7 +16,7 @@ public class ServerState {
 	private int view_number = 0;
 	private Status status;
 	private int op_number = 0;
-	private ArrayList<Message> log; // ver depois o tipo...
+	private ArrayList<Message> log;
 	private int commit_number = 0;
 	private String usingIp;
 
@@ -53,10 +53,8 @@ public class ServerState {
 			log = new ArrayList<Message>();
 			clientTable = new HashMap<String, Tuple>();
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

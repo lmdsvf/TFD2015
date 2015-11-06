@@ -78,7 +78,8 @@ public class Network {
 			byte[] dataSend = outputStream.toByteArray();
 			DatagramPacket sendPacket = new DatagramPacket(dataSend,
 					dataSend.length, ip, portDestination);
-			System.out.println("Sending to " + ip.getHostAddress() + ":" + port);
+			System.out
+					.println("Sending to " + ip.getHostAddress() + ":" + port);
 			socket.send(sendPacket);
 			outputStream.close();
 			os.close();
@@ -89,23 +90,21 @@ public class Network {
 
 	public DatagramPacket receive() {
 		System.out.println("\n\nReceiving data...");
-//		Message returnObject = null;
 		DatagramPacket receivedPacket = new DatagramPacket(receivedData,
 				receivedData.length);
 		try {
 			socket.setSoTimeout(timeout);
 			socket.receive(receivedPacket);
 		} catch (SocketTimeoutException e) {
-//			//e.printStackTrace();
 			return null;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return receivedPacket;
 	}
 
-	public static Message networkToMessage(DatagramPacket data){
+	public static Message networkToMessage(DatagramPacket data) {
 		ByteArrayInputStream in = new ByteArrayInputStream(data.getData());
 		ObjectInputStream is;
 		Message message = null;
@@ -115,47 +114,45 @@ public class Network {
 			in.close();
 			is.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return message;
 	}
-	
 
 	// gets all the ips of the current machine
-	public static ArrayList<String> getAllIps(){
+	public static ArrayList<String> getAllIps() {
 		ArrayList<String> allAddresses = new ArrayList<String>();
-        
+
 		Enumeration<NetworkInterface> nets = null;
 		try {
 			nets = NetworkInterface.getNetworkInterfaces();
 		} catch (SocketException e) {
 			return null;
 		}
-		
-		if(nets == null) return null;
-		
-        for (NetworkInterface netint : Collections.list(nets)){
-	        Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
-	        for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-	        	allAddresses.add(inetAddress.getHostAddress());
-	        }
-        }
-        
-        return allAddresses;
+
+		if (nets == null)
+			return null;
+
+		for (NetworkInterface netint : Collections.list(nets)) {
+			Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+			for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+				allAddresses.add(inetAddress.getHostAddress());
+			}
+		}
+
+		return allAddresses;
 	}
-	
+
 	public InetAddress getLocalIP() {
 		return socket.getLocalAddress();
 	}
 
-	public int getLocalPort(){
+	public int getLocalPort() {
 		return socket.getLocalPort();
 	}
-	
+
 	public int getTimeout() {
 		return timeout;
 	}

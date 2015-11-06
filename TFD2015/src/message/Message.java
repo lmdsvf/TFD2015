@@ -3,6 +3,10 @@ package message;
 import java.io.Serializable;
 
 public class Message implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private MessageType type;
 	private int view_number;
 	private Message client_Message;
@@ -11,10 +15,7 @@ public class Message implements Serializable {
 	private int commit_Number;
 	private String result;
 	private String operation;
-	private String client_Id;// Tem que ser uma String pois o id terá que ser o
-								// IP pois é impossivel fazer ID tipo 1 ou 2 de
-								// máquinas que nem sabemos que nos vão
-								// contactar
+	private String client_Id;
 	private int request_Number;
 
 	// Commit Message
@@ -53,7 +54,6 @@ public class Message implements Serializable {
 
 	// Prepare Message
 	public Message(MessageType prepare, int i, Message msg, int j, int k) {
-		// TODO Auto-generated constructor stub
 		this.type = prepare;
 		this.view_number = i;
 		this.client_Message = msg;

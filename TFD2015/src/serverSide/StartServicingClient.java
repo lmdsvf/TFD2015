@@ -118,10 +118,8 @@ public class StartServicingClient extends Thread {
 							System.out.println("Sended to: " + ip);
 						}
 					} catch (NumberFormatException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (UnknownHostException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					int i = 1;
