@@ -33,6 +33,7 @@ public class ServerState {
 			for (int i = 0; i < NUMBEROFIPS; i++) {
 				configuration.add(properties.get("IP" + i).toString());
 			}
+			configuration.sort(null);
 			System.out.println("Getting my ip!");
 			usingIp = null;
 			for (String ip : configuration) {

@@ -28,8 +28,8 @@ public class Client {
 	private static final int SIZE = 300;
 
 	public Client(final String op) {
-		readConfiguration();
 		state = new ClientState();
+		readConfiguration();
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(SIZE, SIZE);
@@ -50,16 +50,9 @@ public class Client {
 
 	private void readConfiguration() {
 		Properties properties = new Properties();
-		try {
-			properties.load(new FileReader("Configuration.txt"));
-			serverAddress = properties.getProperty("IP0");
-			port = Integer.parseInt(properties.getProperty("PClient"));
-			net = new Network(serverAddress, port);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		serverAddress = state.getConfiguration().get(0);
+		port = Integer.parseInt(state.getProperties().getProperty("PClient"));
+		net = new Network(serverAddress, port);
 	}
 
 	public void execute(String op) {

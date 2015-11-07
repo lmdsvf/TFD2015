@@ -31,7 +31,7 @@ public class ClientState {
 			for (int i = 0; i < NUMBEROFIPS; i++) {
 				configuration.add(properties.get("IP" + i).toString());
 			}
-			System.out.println("Getting my ip!");
+			configuration.sort(null);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
