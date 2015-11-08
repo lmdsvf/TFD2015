@@ -56,6 +56,22 @@ public class Server {
 				if (data != null) // se nao fez timeout
 					new DealWithServers(data).start();
 				else {
+					/**** Checking ****/
+					System.err.println("Current Operation Number: "
+							+ state.getOp_number()
+							+ "\n Current Commit Number: "
+							+ state.getCommit_number()
+							+ " \n Current View Number: "
+							+ state.getView_number() + " \n Curent Log size: "
+							+ state.getLog().size());
+					int u = 0;
+					for (Message received : state.getLog()) {
+						System.err.println("Message " + u + ": "
+								+ received.getType() + " from Client:"
+								+ received.getClient_Id());
+						u++;
+					}
+					/********/
 					System.out.println("Don't do nothing!");
 					// Aqui será o ViewChange
 				}
@@ -128,6 +144,13 @@ public class Server {
 					}
 					break;
 				case COMMIT:
+					if (msg.getCommit_Number() == state.getCommit_number() + 1) {
+						state.setCommit_number(msg.getCommit_Number());
+						/* E aqui? */
+					} else if (msg.getCommit_Number() > state
+							.getCommit_number() + 1) {
+						// Transfer State
+					}
 					/**** Checking ****/
 					System.err.println("Current Operation Number: "
 							+ state.getOp_number()
@@ -144,13 +167,6 @@ public class Server {
 						u++;
 					}
 					/********/
-					if (msg.getCommit_Number() == state.getCommit_number() + 1) {
-						state.setCommit_number(msg.getCommit_Number());
-						/* E aqui? */
-					} else if (msg.getCommit_Number() > state
-							.getCommit_number() + 1) {
-						// Transfer State
-					}
 					break;
 				default:
 					break;

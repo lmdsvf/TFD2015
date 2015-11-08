@@ -23,13 +23,15 @@ public class ServerState {
 	private HashMap<String, Tuple> clientTable;
 
 	private Properties properties;
-	public static final int NUMBEROFIPS = 3;
+	private int NUMBEROFIPS;
 
 	public ServerState() {
 		try {
 			properties = new Properties();
 			properties.load(new FileReader("Configuration.txt"));
 			configuration = new ArrayList<String>();
+			NUMBEROFIPS = Integer.parseInt(properties
+					.getProperty("NumberOfIps"));
 			for (int i = 0; i < NUMBEROFIPS; i++) {
 				configuration.add(properties.get("IP" + i).toString());
 			}

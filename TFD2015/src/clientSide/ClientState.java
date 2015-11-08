@@ -7,8 +7,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import serverSide.ServerState;
-
 public class ClientState {
 	private String id;
 	private String ipAddress;
@@ -27,7 +25,8 @@ public class ClientState {
 			properties = new Properties();
 			properties.load(new FileReader("Configuration.txt"));
 			configuration = new ArrayList<String>();
-			int NUMBEROFIPS = ServerState.NUMBEROFIPS;
+			int NUMBEROFIPS = Integer.parseInt(properties
+					.getProperty("NumberOfIps"));
 			for (int i = 0; i < NUMBEROFIPS; i++) {
 				configuration.add(properties.get("IP" + i).toString());
 			}

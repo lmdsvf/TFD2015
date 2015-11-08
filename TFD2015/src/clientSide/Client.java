@@ -4,14 +4,10 @@ import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -49,7 +45,6 @@ public class Client {
 	}
 
 	private void readConfiguration() {
-		Properties properties = new Properties();
 		serverAddress = state.getConfiguration().get(0);
 		port = Integer.parseInt(state.getProperties().getProperty("PClient"));
 		net = new Network(serverAddress, port);
