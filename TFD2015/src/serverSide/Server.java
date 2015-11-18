@@ -240,7 +240,9 @@ public class Server {
 							i++;
 						} else
 							break;
+						System.err.println("StartVIEWCHANGE Loop");
 					}
+					System.out.println("NUMBER OF FAULTS: " + f + " i: " + i);
 					if (i >= f) {
 						Message doViewChange = new Message(
 								MessageType.DO_VIEW_CHANGE,
