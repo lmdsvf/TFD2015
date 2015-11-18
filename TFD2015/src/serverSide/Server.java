@@ -227,32 +227,51 @@ public class Server {
 
 				case START_VIEW_CHANGE:
 					System.out.println("Start View Change Message Received!");
-					/*
-					 * state.setLastest_normal_view_change(state
-					 * .getView_number()); state.view_numer_increment();
-					 * state.setStatus(Status.VIEWCHANGE); int f =
-					 * (state.getNUMBEROFIPS() - 1) / 2; int i = 0; while (i !=
-					 * f) { DatagramPacket start = backUpServer.receive();// VER
-					 * // ISTO // MELHOR // A // SÉRIO!! if (start != null) {
-					 * i++; } else break; } if (i >= f) { Message doViewChange =
-					 * new Message( MessageType.DO_VIEW_CHANGE,
-					 * state.getView_number(), state.getLog(),
-					 * state.getLastest_normal_view_change (),
-					 * state.getOp_number(), state.getCommit_number(),
-					 * state.getUsingIp()); try {
-					 * backUpServer.send(doViewChange, InetAddress
-					 * .getByName(state.getConfiguration ().get(
-					 * state.getView_number() % state.getConfiguration()
-					 * .size())), Integer.parseInt(properties
-					 * .getProperty("PServer"))); System.out .println(
-					 * "DoViewChange Message Sended to the future primary, Witch is: "
-					 * + state.getConfiguration() .get(state.getView_number() %
-					 * state.getConfiguration() .size())); } catch
-					 * (NumberFormatException e) { e.printStackTrace(); } catch
-					 * (UnknownHostException e) { e.printStackTrace(); } }
-					 */
+
+					state.setLastest_normal_view_change(state.getView_number());
+					state.view_numer_increment();
+					state.setStatus(Status.VIEWCHANGE);
+					int f = (state.getNUMBEROFIPS() - 1) / 2;
+					int i = 0;
+					while (i != f) {
+						DatagramPacket start = backUpServer.receive();// VER
+						// ISTO // MELHOR // A // SÉRIO!!
+						if (start != null) {
+							i++;
+						} else
+							break;
+					}
+					if (i >= f) {
+						Message doViewChange = new Message(
+								MessageType.DO_VIEW_CHANGE,
+								state.getView_number(), state.getLog(),
+								state.getLastest_normal_view_change(),
+								state.getOp_number(), state.getCommit_number(),
+								state.getUsingIp());
+						try {
+							backUpServer.send(doViewChange, InetAddress
+									.getByName(state.getConfiguration().get(
+											state.getView_number()
+													% state.getConfiguration()
+															.size())),
+									Integer.parseInt(properties
+											.getProperty("PServer")));
+							System.out
+									.println("DoViewChange Message Sended to the future primary, Witch is: "
+											+ state.getConfiguration()
+													.get(state.getView_number()
+															% state.getConfiguration()
+																	.size()));
+						} catch (NumberFormatException e) {
+							e.printStackTrace();
+						} catch (UnknownHostException e) {
+							e.printStackTrace();
+						}
+					}
+
 					break;
 				case DO_VIEW_CHANGE:
+					System.out.println("Do View Change Message Received!");
 					/*
 					 * int fdo = (state.getNUMBEROFIPS() - 1) / 2; int ido = 0;
 					 * ArrayList<Message> aux = new ArrayList<Message>();
