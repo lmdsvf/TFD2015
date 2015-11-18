@@ -232,7 +232,7 @@ public class Server {
 					state.view_numer_increment();
 					state.setStatus(Status.VIEWCHANGE);
 					int f = (state.getNUMBEROFIPS() - 1) / 2;
-					int i = 0;
+					int i = 1;
 					while (i != f) {
 						DatagramPacket start = backUpServer.receive();// VER
 						// ISTO // MELHOR // A // SÉRIO!!
