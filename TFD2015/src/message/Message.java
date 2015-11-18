@@ -1,6 +1,7 @@
 package message;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class Message implements Serializable {
 	/**
@@ -17,6 +18,8 @@ public class Message implements Serializable {
 	private String operation;
 	private String client_Id;
 	private int request_Number;
+	private ArrayList<Message> log;
+	private int lastest_Normal_View_Change;
 
 	// Commit Message
 	public Message(MessageType commit, int view_number, int commit_number) {
@@ -59,6 +62,48 @@ public class Message implements Serializable {
 		this.client_Message = msg;
 		this.operation_number = j;
 		this.commit_Number = k;
+	}
+
+	/******************* VIEW CHANGE MESSAGES *******************/
+
+	// Start View Change
+	public Message(MessageType startViewChange, int view_number, String backUpIp) {
+		this.type = startViewChange;
+		this.view_number = view_number;
+		this.backUp_Ip = backUpIp;
+	}
+
+	// DO VIEW CHANGE
+	public Message(MessageType doViewChange, int view_number,
+			ArrayList<Message> log, int lastest_normal_view_change,
+			int op_number, int commited_number, String backUpIp) {
+		this.type = doViewChange;
+		this.view_number = view_number;
+		this.log = log;
+		this.lastest_Normal_View_Change = lastest_normal_view_change;
+		this.operation_number = op_number;
+		this.commit_Number = commited_number;
+		this.backUp_Ip = backUpIp;
+	}
+
+	// Start View Change
+	public Message(MessageType start_View_Change, int view_number,
+			ArrayList<Message> log, int op_number, int commited_number) {
+		this.type = start_View_Change;
+		this.view_number = view_number;
+		this.log = log;
+		this.operation_number = op_number;
+		this.commit_Number = commited_number;
+	}
+
+	/********** GETTERS **********/
+
+	public int getLastest_Normal_View_Change() {
+		return lastest_Normal_View_Change;
+	}
+
+	public ArrayList<Message> getLog() {
+		return log;
 	}
 
 	public MessageType getType() {

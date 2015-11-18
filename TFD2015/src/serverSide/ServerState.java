@@ -19,9 +19,8 @@ public class ServerState {
 	private ArrayList<Message> log;
 	private int commit_number = 0;
 	private String usingIp;
-
+	private int lastest_normal_view_change = 0;
 	private HashMap<String, Tuple> clientTable;
-
 	private Properties properties;
 	private int NUMBEROFIPS;
 
@@ -61,6 +60,10 @@ public class ServerState {
 			e.printStackTrace();
 		}
 
+	}
+
+	public int getNUMBEROFIPS() {
+		return NUMBEROFIPS;
 	}
 
 	public String getUsingIp() {
@@ -143,7 +146,20 @@ public class ServerState {
 		this.commit_number += 1;
 	}
 
+	public void view_numer_increment() {
+		this.view_number += 1;
+	}
+
 	public void addMessageToLog(Message newMessage) {
 		this.log.add(newMessage);
 	}
+
+	public int getLastest_normal_view_change() {
+		return lastest_normal_view_change;
+	}
+
+	public void setLastest_normal_view_change(int lastest_normal_view_change) {
+		this.lastest_normal_view_change = lastest_normal_view_change;
+	}
+
 }

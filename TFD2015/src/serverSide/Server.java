@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -52,7 +53,7 @@ public class Server {
 			System.out.println("BackUp activo");
 			while (true) { // espera do contacto do primary
 				System.out.println("Waiting for primary...");
-				DatagramPacket data = backUpServer.receive();
+				DatagramPacket data = backUpServer.receiveViewChange();
 				if (data != null) // se nao fez timeout
 					new DealWithServers(data).start();
 				else {
@@ -71,21 +72,76 @@ public class Server {
 								+ received.getClient_Id());
 						u++;
 					}
-					/********/
-					System.out.println("Don't do nothing!");
+					/**** View Changing! ****/
+					System.out.println("View Changing!");
 					// Aqui será o ViewChange
+					state.setLastest_normal_view_change(state.getView_number());
+					state.view_numer_increment();
+					state.setStatus(Status.VIEWCHANGE);
+					Message startViewChange = new Message(
+							MessageType.START_VIEW_CHANGE,
+							state.getView_number(), state.getUsingIp());
+					try {
+						for (String ip : state.getConfiguration()) {
+							if (!state.getUsingIp().equals(ip)) {
+								backUpServer.send(startViewChange, InetAddress
+										.getByName(ip), Integer
+										.parseInt(state.getProperties()
+												.getProperty("PServer")));
+								System.out
+										.println("Start View Message sended to: "
+												+ ip);
+							}
+						}
+					} catch (NumberFormatException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (UnknownHostException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
-
 			}
 		}
 
 		class DealWithServers extends Thread {
+			private static final int UNIQUE = 1;
 			private Message msg;
 			private InetAddress ipPrimary;
 
 			public DealWithServers(DatagramPacket data) {
 				this.ipPrimary = data.getAddress();
 				this.msg = Network.networkToMessage(data);
+			}
+
+			private void getNewLogAndViewNumber(ArrayList<Message> aux) {
+				int biggestViewNumber = 0;
+				ArrayList<Message> possibleLogs = new ArrayList<Message>();
+				for (Message m : aux) {
+					if (biggestViewNumber < m.getView_number()) {
+						biggestViewNumber = m.getView_number();
+					}
+				}
+				state.setView_number(biggestViewNumber);// Confirmar
+				for (Message m : aux) {
+					if (biggestViewNumber == m.getView_number()) {
+						possibleLogs.add(m);
+					}
+				}
+				if (possibleLogs.size() == UNIQUE) {
+					state.setLog(possibleLogs.get(0).getLog());
+				} else {
+					int largestN = 0;
+					ArrayList<Message> possibleLogsWithOp_number = new ArrayList<Message>();
+					for (Message m : possibleLogs) {
+						if (m.getOperation_number() > largestN) {
+							largestN = m.getOperation_number();
+							possibleLogsWithOp_number.add(m);
+						}
+					}
+					state.setLog(possibleLogsWithOp_number.get(
+							possibleLogsWithOp_number.size() - 1).getLog());
+				}
 			}
 
 			@Override
@@ -167,6 +223,47 @@ public class Server {
 						u++;
 					}
 					/********/
+					break;
+
+				case START_VIEW_CHANGE:
+					System.out.println("Start View Change Message Received!");
+					/*
+					 * state.setLastest_normal_view_change(state
+					 * .getView_number()); state.view_numer_increment();
+					 * state.setStatus(Status.VIEWCHANGE); int f =
+					 * (state.getNUMBEROFIPS() - 1) / 2; int i = 0; while (i !=
+					 * f) { DatagramPacket start = backUpServer.receive();// VER
+					 * // ISTO // MELHOR // A // SÉRIO!! if (start != null) {
+					 * i++; } else break; } if (i >= f) { Message doViewChange =
+					 * new Message( MessageType.DO_VIEW_CHANGE,
+					 * state.getView_number(), state.getLog(),
+					 * state.getLastest_normal_view_change (),
+					 * state.getOp_number(), state.getCommit_number(),
+					 * state.getUsingIp()); try {
+					 * backUpServer.send(doViewChange, InetAddress
+					 * .getByName(state.getConfiguration ().get(
+					 * state.getView_number() % state.getConfiguration()
+					 * .size())), Integer.parseInt(properties
+					 * .getProperty("PServer"))); System.out .println(
+					 * "DoViewChange Message Sended to the future primary, Witch is: "
+					 * + state.getConfiguration() .get(state.getView_number() %
+					 * state.getConfiguration() .size())); } catch
+					 * (NumberFormatException e) { e.printStackTrace(); } catch
+					 * (UnknownHostException e) { e.printStackTrace(); } }
+					 */
+					break;
+				case DO_VIEW_CHANGE:
+					/*
+					 * int fdo = (state.getNUMBEROFIPS() - 1) / 2; int ido = 0;
+					 * ArrayList<Message> aux = new ArrayList<Message>();
+					 * DatagramPacket start = null; while (ido != fdo + 1) {
+					 * start = null; start = backUpServer.receive();// VER //
+					 * ISTO // MELHOR // A // SÉRIO!! E fazer com que as
+					 * replicas sejam diferentes, // garantir vá. if (start !=
+					 * null) { aux.add(Network.networkToMessage(start)); ido++;
+					 * } else break; } if (ido >= fdo + 1) {// Ver ISto melhor
+					 * getNewLogAndViewNumber(aux); }
+					 */
 					break;
 				default:
 					break;

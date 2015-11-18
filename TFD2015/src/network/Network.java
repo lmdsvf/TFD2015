@@ -30,6 +30,7 @@ public class Network {
 	private int port;
 	private DatagramSocket socket;
 	private int timeout;
+	private int timeoutViewChange;
 
 	// client constructor
 	public Network(String address, int port) {
@@ -63,11 +64,17 @@ public class Network {
 		try {
 			p.load(new FileReader("Configuration.txt"));
 			this.timeout = Integer.parseInt(p.getProperty("T"));
+			this.timeoutViewChange = Integer.parseInt(p
+					.getProperty("TViewChange"));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public int getTimeoutViewChange() {
+		return timeoutViewChange;
 	}
 
 	public void send(Message data, InetAddress ip, int portDestination) {
@@ -94,6 +101,22 @@ public class Network {
 				receivedData.length);
 		try {
 			socket.setSoTimeout(timeout);
+			socket.receive(receivedPacket);
+		} catch (SocketTimeoutException e) {
+			return null;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return receivedPacket;
+	}
+
+	public DatagramPacket receiveViewChange() {
+		System.out.println("\n\nReceiving data...");
+		DatagramPacket receivedPacket = new DatagramPacket(receivedData,
+				receivedData.length);
+		try {
+			socket.setSoTimeout(timeoutViewChange);
 			socket.receive(receivedPacket);
 		} catch (SocketTimeoutException e) {
 			return null;

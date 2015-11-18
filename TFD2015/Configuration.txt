@@ -2,4 +2,4 @@ IP0=192.168.1.2IP1=192.168.1.3
 IP2=192.168.1.4NumberOfIps=3
 PClient=4988
 PServer=4989
-T=10000
+T=10000TViewChange=20000
