@@ -26,6 +26,12 @@ public class StartServicingClient extends Thread {
 		System.out.println("ServerSocket activa");
 		serverToserver = new Network(Integer.parseInt(state.getProperties()
 				.getProperty("PServer")));
+		/***** Quando o commit não é igual ao tamanho do log *****/
+		if (state.getCommit_number() != state.getLog().size()) {
+			for (int i = state.getCommit_number(); i < state.getLog().size(); i++) {
+				new DealWithClient(null);
+			}
+		}
 		while (true) { // espera q venha clients
 			System.out.println("Waiting for clients...");
 			DatagramPacket data = server.receive();

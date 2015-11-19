@@ -86,10 +86,10 @@ public class Message implements Serializable {
 		this.backUp_Ip = backUpIp;
 	}
 
-	// Start View Change
-	public Message(MessageType start_View_Change, int view_number,
+	// Start View
+	public Message(MessageType start_View, int view_number,
 			ArrayList<Message> log, int op_number, int commited_number) {
-		this.type = start_View_Change;
+		this.type = start_View;
 		this.view_number = view_number;
 		this.log = log;
 		this.operation_number = op_number;

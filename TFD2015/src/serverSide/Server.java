@@ -83,15 +83,13 @@ public class Server {
 							state.getView_number(), state.getUsingIp());
 					try {
 						for (String ip : state.getConfiguration()) {
-							if (!state.getUsingIp().equals(ip)) {
-								backUpServer.send(startViewChange, InetAddress
-										.getByName(ip), Integer
-										.parseInt(state.getProperties()
-												.getProperty("PServer")));
-								System.out
-										.println("Start View Message sended to: "
-												+ ip);
-							}
+							// if (!state.getUsingIp().equals(ip)) {
+							backUpServer.send(startViewChange, InetAddress
+									.getByName(ip), Integer.parseInt(state
+									.getProperties().getProperty("PServer")));
+							System.out.println("Start View Message sended to: "
+									+ ip);
+							// }
 						}
 					} catch (NumberFormatException e) {
 						// TODO Auto-generated catch block
@@ -130,6 +128,8 @@ public class Server {
 				}
 				if (possibleLogs.size() == UNIQUE) {
 					state.setLog(possibleLogs.get(0).getLog());
+					state.setCommit_number(possibleLogs.get(0)
+							.getCommit_Number());
 				} else {
 					int largestN = 0;
 					ArrayList<Message> possibleLogsWithOp_number = new ArrayList<Message>();
@@ -141,7 +141,11 @@ public class Server {
 					}
 					state.setLog(possibleLogsWithOp_number.get(
 							possibleLogsWithOp_number.size() - 1).getLog());
+					state.setCommit_number(possibleLogsWithOp_number.get(
+							possibleLogsWithOp_number.size() - 1)
+							.getCommit_Number());
 				}
+				state.setOp_number(state.getLog().size());
 			}
 
 			@Override
@@ -274,17 +278,59 @@ public class Server {
 					break;
 				case DO_VIEW_CHANGE:
 					System.out.println("Do View Change Message Received!");
-					/*
-					 * int fdo = (state.getNUMBEROFIPS() - 1) / 2; int ido = 0;
-					 * ArrayList<Message> aux = new ArrayList<Message>();
-					 * DatagramPacket start = null; while (ido != fdo + 1) {
-					 * start = null; start = backUpServer.receive();// VER //
-					 * ISTO // MELHOR // A // SÉRIO!! E fazer com que as
-					 * replicas sejam diferentes, // garantir vá. if (start !=
-					 * null) { aux.add(Network.networkToMessage(start)); ido++;
-					 * } else break; } if (ido >= fdo + 1) {// Ver ISto melhor
-					 * getNewLogAndViewNumber(aux); }
-					 */
+					int fdo = (state.getNUMBEROFIPS() - 1) / 2;
+					int ido = 1;
+					ArrayList<Message> aux = new ArrayList<Message>();
+					DatagramPacket start = null;
+					while (ido != fdo + 1) {
+						start = null;
+						start = backUpServer.receive();// VER //ISTO // MELHOR
+														// // A // SÉRIO!! E
+														// fazer com que as
+														// replicas sejam
+														// diferentes, //
+														// garantir vá.
+						if (start != null) {
+							aux.add(Network.networkToMessage(start));
+							ido++;
+						} else
+							break;
+					}
+					if (ido >= fdo + 1) {// Ver ISto melhor
+						getNewLogAndViewNumber(aux);
+						Message startView = new Message(MessageType.START_VIEW,
+								state.getView_number(), state.getLog(),
+								state.getOp_number(), state.getCommit_number());
+						try {
+							for (String ip : state.getConfiguration()) {
+								if (!state.getUsingIp().equals(ip)) {
+									backUpServer.send(startView, InetAddress
+											.getByName(ip), Integer
+											.parseInt(state.getProperties()
+													.getProperty("PServer")));
+									System.out
+											.println("Start View Message sended to: "
+													+ ip);
+								}
+							}
+						} catch (NumberFormatException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (UnknownHostException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						state.setStatus(Status.NORMAL);
+					}
+
+					break;
+				case START_VIEW:
+					state.setView_number(msg.getView_number());
+					state.setCommit_number(msg.getCommit_Number());
+					state.setLog(msg.getLog());
+					state.setOp_number(msg.getOperation_number());
+					state.setStatus(Status.NORMAL);
+					new StartServicingClient(state);
 					break;
 				default:
 					break;
