@@ -325,6 +325,7 @@ public class Server {
 
 					break;
 				case START_VIEW:
+					System.out.println("Start View Message Received!");
 					state.setView_number(msg.getView_number());
 					state.setCommit_number(msg.getCommit_Number());
 					state.setLog(msg.getLog());
