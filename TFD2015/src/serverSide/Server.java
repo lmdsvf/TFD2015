@@ -83,13 +83,15 @@ public class Server {
 							state.getView_number(), state.getUsingIp());
 					try {
 						for (String ip : state.getConfiguration()) {
-							// if (!state.getUsingIp().equals(ip)) {
-							backUpServer.send(startViewChange, InetAddress
-									.getByName(ip), Integer.parseInt(state
-									.getProperties().getProperty("PServer")));
-							System.out.println("Start View Message sended to: "
-									+ ip);
-							// }
+							if (!state.getUsingIp().equals(ip)) {
+								backUpServer.send(startViewChange, InetAddress
+										.getByName(ip), Integer
+										.parseInt(state.getProperties()
+												.getProperty("PServer")));
+								System.out
+										.println("Start View Message sended to: "
+												+ ip);
+							}
 						}
 					} catch (NumberFormatException e) {
 						// TODO Auto-generated catch block
