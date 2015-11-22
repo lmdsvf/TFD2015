@@ -240,6 +240,31 @@ public class Server {
 								.getView_number());
 						state.view_numer_increment();
 						state.setStatus(Status.VIEWCHANGE);
+						Message startViewChange = new Message(
+								MessageType.START_VIEW_CHANGE,
+								state.getView_number(), state.getUsingIp());
+						try {
+							for (String ip : state.getConfiguration()) {
+								if (!state.getUsingIp().equals(ip)) {
+									backUpServer
+											.send(startViewChange, InetAddress
+													.getByName(ip), Integer
+													.parseInt(state
+															.getProperties()
+															.getProperty(
+																	"PServer")));
+									System.out
+											.println("Start View Message sended to after receving a Start_VIEW_CHANGE: "
+													+ ip);
+								}
+							}
+						} catch (NumberFormatException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (UnknownHostException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						int f = (state.getNUMBEROFIPS() - 1) / 2;
 						int i = 1;
 						while (i != f) {
@@ -290,6 +315,35 @@ public class Server {
 				case DO_VIEW_CHANGE:
 					if (state.getView_number() < msg.getView_number()) {
 						System.out.println("Do View Change Message Received!");
+						state.setLastest_normal_view_change(state
+								.getView_number());
+						state.view_numer_increment();
+						state.setStatus(Status.VIEWCHANGE);
+						Message startViewChange = new Message(
+								MessageType.START_VIEW_CHANGE,
+								state.getView_number(), state.getUsingIp());
+						try {
+							for (String ip : state.getConfiguration()) {
+								if (!state.getUsingIp().equals(ip)) {
+									backUpServer
+											.send(startViewChange, InetAddress
+													.getByName(ip), Integer
+													.parseInt(state
+															.getProperties()
+															.getProperty(
+																	"PServer")));
+									System.out
+											.println("Start View Message sended to after receving a DO_VIEW_CHANGE: "
+													+ ip);
+								}
+							}
+						} catch (NumberFormatException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (UnknownHostException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						int fdo = (state.getNUMBEROFIPS() - 1) / 2;
 						int ido = 1;
 						ArrayList<Message> aux = new ArrayList<Message>();
