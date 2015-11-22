@@ -232,99 +232,116 @@ public class Server {
 					break;
 
 				case START_VIEW_CHANGE:
-					System.out.println("Start View Change Message Received!");
+					if (state.getView_number() < msg.getView_number()) {
+						System.out
+								.println("Start View Change Message Received!");
 
-					state.setLastest_normal_view_change(state.getView_number());
-					state.view_numer_increment();
-					state.setStatus(Status.VIEWCHANGE);
-					int f = (state.getNUMBEROFIPS() - 1) / 2;
-					int i = 1;
-					while (i != f) {
-						DatagramPacket start = backUpServer.receive();// VER
-						// ISTO // MELHOR // A // SÉRIO!!
-						if (start != null) {
-							i++;
-						} else
-							break;
-						System.err.println("StartVIEWCHANGE Loop");
-					}
-					System.out.println("NUMBER OF FAULTS: " + f + " i: " + i);
-					if (i >= f) {
-						Message doViewChange = new Message(
-								MessageType.DO_VIEW_CHANGE,
-								state.getView_number(), state.getLog(),
-								state.getLastest_normal_view_change(),
-								state.getOp_number(), state.getCommit_number(),
-								state.getUsingIp());
-						try {
-							backUpServer.send(doViewChange, InetAddress
-									.getByName(state.getConfiguration().get(
-											state.getView_number()
-													% state.getConfiguration()
-															.size())),
-									Integer.parseInt(properties
-											.getProperty("PServer")));
-							System.out
-									.println("DoViewChange Message Sended to the future primary, Witch is: "
-											+ state.getConfiguration()
-													.get(state.getView_number()
-															% state.getConfiguration()
-																	.size()));
-						} catch (NumberFormatException e) {
-							e.printStackTrace();
-						} catch (UnknownHostException e) {
-							e.printStackTrace();
+						state.setLastest_normal_view_change(state
+								.getView_number());
+						state.view_numer_increment();
+						state.setStatus(Status.VIEWCHANGE);
+						int f = (state.getNUMBEROFIPS() - 1) / 2;
+						int i = 1;
+						while (i != f) {
+							DatagramPacket start = backUpServer.receive();// VER
+							// ISTO // MELHOR // A // SÉRIO!!
+							if (start != null) {
+								i++;
+							} else
+								break;
+							System.err.println("StartVIEWCHANGE Loop");
+						}
+						System.out.println("NUMBER OF FAULTS: " + f + " i: "
+								+ i);
+						if (i >= f) {
+							Message doViewChange = new Message(
+									MessageType.DO_VIEW_CHANGE,
+									state.getView_number(), state.getLog(),
+									state.getLastest_normal_view_change(),
+									state.getOp_number(),
+									state.getCommit_number(),
+									state.getUsingIp());
+							try {
+								backUpServer
+										.send(doViewChange,
+												InetAddress.getByName(state
+														.getConfiguration()
+														.get(state
+																.getView_number()
+																% state.getConfiguration()
+																		.size())),
+												Integer.parseInt(properties
+														.getProperty("PServer")));
+								System.out
+										.println("DoViewChange Message Sended to the future primary, Witch is: "
+												+ state.getConfiguration()
+														.get(state
+																.getView_number()
+																% state.getConfiguration()
+																		.size()));
+							} catch (NumberFormatException e) {
+								e.printStackTrace();
+							} catch (UnknownHostException e) {
+								e.printStackTrace();
+							}
 						}
 					}
-
 					break;
 				case DO_VIEW_CHANGE:
-					System.out.println("Do View Change Message Received!");
-					int fdo = (state.getNUMBEROFIPS() - 1) / 2;
-					int ido = 1;
-					ArrayList<Message> aux = new ArrayList<Message>();
-					DatagramPacket start = null;
-					while (ido != fdo + 1) {
-						start = null;
-						start = backUpServer.receive();// VER //ISTO // MELHOR
-														// // A // SÉRIO!! E
-														// fazer com que as
-														// replicas sejam
-														// diferentes, //
-														// garantir vá.
-						if (start != null) {
-							aux.add(Network.networkToMessage(start));
-							ido++;
-						} else
-							break;
-					}
-					if (ido >= fdo + 1) {// Ver ISto melhor
-						getNewLogAndViewNumber(aux);
-						Message startView = new Message(MessageType.START_VIEW,
-								state.getView_number(), state.getLog(),
-								state.getOp_number(), state.getCommit_number());
-						try {
-							for (String ip : state.getConfiguration()) {
-								if (!state.getUsingIp().equals(ip)) {
-									backUpServer.send(startView, InetAddress
-											.getByName(ip), Integer
-											.parseInt(state.getProperties()
-													.getProperty("PServer")));
-									System.out
-											.println("Start View Message sended to: "
-													+ ip);
-								}
-							}
-						} catch (NumberFormatException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (UnknownHostException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+					if (state.getView_number() < msg.getView_number()) {
+						System.out.println("Do View Change Message Received!");
+						int fdo = (state.getNUMBEROFIPS() - 1) / 2;
+						int ido = 1;
+						ArrayList<Message> aux = new ArrayList<Message>();
+						DatagramPacket start = null;
+						while (ido != fdo + 1) {
+							start = null;
+							start = backUpServer.receive();// VER //ISTO //
+															// MELHOR
+															// // A // SÉRIO!! E
+															// fazer com que as
+															// replicas sejam
+															// diferentes, //
+															// garantir vá.
+							if (start != null) {
+								aux.add(Network.networkToMessage(start));
+								ido++;
+							} else
+								break;
 						}
-						state.setStatus(Status.NORMAL);
+						if (ido >= fdo + 1) {// Ver ISto melhor
+							getNewLogAndViewNumber(aux);
+							Message startView = new Message(
+									MessageType.START_VIEW,
+									state.getView_number(), state.getLog(),
+									state.getOp_number(),
+									state.getCommit_number());
+							try {
+								for (String ip : state.getConfiguration()) {
+									if (!state.getUsingIp().equals(ip)) {
+										backUpServer
+												.send(startView,
+														InetAddress
+																.getByName(ip),
+														Integer.parseInt(state
+																.getProperties()
+																.getProperty(
+																		"PServer")));
+										System.out
+												.println("Start View Message sended to: "
+														+ ip);
+									}
+								}
+							} catch (NumberFormatException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (UnknownHostException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							state.setStatus(Status.NORMAL);
+						}
 					}
-
 					break;
 				case START_VIEW:
 					System.out.println("Start View Message Received!");
