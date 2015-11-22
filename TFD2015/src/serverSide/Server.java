@@ -243,6 +243,7 @@ public class Server {
 						Message startViewChange = new Message(
 								MessageType.START_VIEW_CHANGE,
 								state.getView_number(), state.getUsingIp());
+						System.err.println("UsingIp: " + state.getUsingIp());
 						try {
 							for (String ip : state.getConfiguration()) {
 								if (!state.getUsingIp().equals(ip)) {
