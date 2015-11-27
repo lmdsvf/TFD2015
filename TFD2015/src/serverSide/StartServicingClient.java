@@ -25,7 +25,7 @@ public class StartServicingClient extends Thread {
 				.getProperty("PClient")));
 		System.out.println("ServerSocket activa");
 		serverToserver = new Network(Integer.parseInt(state.getProperties()
-				.getProperty("PServer")));
+				.getProperty("PServer")+state.getReplica_number()));
 		/***** Quando o commit não é igual ao tamanho do log *****/
 		if (state.getCommit_number() != state.getLog().size()) {
 			for (int i = state.getCommit_number(); i < state.getLog().size(); i++) {
@@ -56,11 +56,13 @@ public class StartServicingClient extends Thread {
 				Message commit = new Message(MessageType.COMMIT,
 						state.getView_number(), state.getCommit_number());
 				try {
+					int i = 0;
 					for (String ip : state.getConfiguration()) {
-						server.send(commit, InetAddress.getByName(ip), Integer
+						server.send(commit, InetAddress.getByName(ip.split(":")[0]), Integer
 								.parseInt(state.getProperties().getProperty(
-										"PServer")));
+										"PServer"))+i);
 						System.out.println("Commited to: " + ip);
+						i++;
 					}
 				} catch (NumberFormatException e) {
 					e.printStackTrace();
@@ -117,11 +119,13 @@ public class StartServicingClient extends Thread {
 							state.getView_number(), msg, state.getOp_number(),
 							state.getCommit_number());
 					try {
+						int i = 0;
 						for (String ip : state.getConfiguration()) {
 							server.send(prepare, InetAddress.getByName(ip),
 									Integer.parseInt(state.getProperties()
-											.getProperty("PServer")));
+											.getProperty("PServer"))+i);
 							System.out.println("Sended to: " + ip);
+							i++;
 						}
 					} catch (NumberFormatException e) {
 						e.printStackTrace();

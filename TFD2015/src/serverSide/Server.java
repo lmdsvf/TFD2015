@@ -14,14 +14,18 @@ import message.MessageType;
 import network.Network;
 
 public class Server {
+	
 	private ServerState state;
 	private Properties properties;
 	private ArrayList<Message> bufferForMessagesWithToHigherOpNumber;
-
-	public Server() {
-		state = new ServerState();
+	private int port;
+	
+	public Server(int port) {
+		this.port = port;
+		state = new ServerState(port);
 		properties = state.getProperties();
 		bufferForMessagesWithToHigherOpNumber = new ArrayList<Message>();
+		
 		try {
 			properties.load(new FileReader("Configuration.txt"));
 		} catch (FileNotFoundException e) {
@@ -29,12 +33,15 @@ public class Server {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
 		int mod = state.getView_number() % state.getConfiguration().size();
+		
 		// primario
 		if (mod == state.getReplica_number()) {
 			new StartServicingClient(state).start();
 			System.out.println("Primario esta Disponivel");
-			// replica
+			
+		// replica
 		} else {
 			// Instancia network para fazer recovery
 			new KeepingPortOpen().start();
@@ -48,8 +55,7 @@ public class Server {
 
 		@Override
 		public void run() {
-			backUpServer = new Network(Integer.parseInt(properties
-					.getProperty("PServer")));
+			backUpServer = new Network(port);
 			System.out.println("BackUp activo");
 			while (true) { // espera do contacto do primary
 				System.out.println("Waiting for primary...");
@@ -63,7 +69,7 @@ public class Server {
 							+ "\n Current Commit Number: "
 							+ state.getCommit_number()
 							+ " \n Current View Number: "
-							+ state.getView_number() + " \n Curent Log size: "
+							+ state.getView_number() + " \n Current Log size: "
 							+ state.getLog().size());
 					int u = 0;
 					for (Message received : state.getLog()) {
@@ -82,16 +88,16 @@ public class Server {
 							MessageType.START_VIEW_CHANGE,
 							state.getView_number(), state.getUsingIp());
 					try {
+						int i = 0;
 						for (String ip : state.getConfiguration()) {
-							if (!state.getUsingIp().equals(ip)) {
+							if (!state.getUsingAddress().equals(ip)) {
 								backUpServer.send(startViewChange, InetAddress
-										.getByName(ip), Integer
+										.getByName(ip.split(":")[0]), Integer
 										.parseInt(state.getProperties()
-												.getProperty("PServer")));
-								System.out
-										.println("Start View Message sended to: "
-												+ ip);
+												.getProperty("P"+ i)));
+								System.out.println("Start View Message sended to: "	+ ip);
 							}
+							i++;
 						}
 					} catch (NumberFormatException e) {
 						// TODO Auto-generated catch block
@@ -154,8 +160,7 @@ public class Server {
 			public void run() {
 				switch (msg.getType()) {
 				case PREPARE:
-					System.out
-							.println("Prepare Messge Received with Request message from client: "
+					System.out.println("Prepare Message Received with Request message from client: "
 									+ msg.getClient_Message().getClient_Id());
 					if (!state.getClientTable().containsKey(
 							msg.getClient_Message().getClient_Id())) {
@@ -165,8 +170,7 @@ public class Server {
 										INCIALRESULTVALUEINTUPLE));
 					}
 					if (msg.getOperation_number() > (state.getLog().size() + 1)) {
-						System.out
-								.println("Operation Number recived to high! Went to the Buffer!");
+						System.out.println("Operation Number recieved to high! Went to the Buffer!");
 						bufferForMessagesWithToHigherOpNumber.add(msg);
 					} else if (msg.getOperation_number() == (state.getLog()
 							.size() + 1)) {
@@ -201,7 +205,7 @@ public class Server {
 								state.getView_number(), state.getOp_number(),
 								state.getUsingIp());
 						backUpServer.send(prepareOk, ipPrimary, Integer
-								.parseInt(properties.getProperty("PServer")));
+								.parseInt(properties.getProperty("PServer")+(state.getView_number()%Integer.parseInt(properties.getProperty("NumberOfIps")))));
 						DealingWithBuffer();
 					}
 					break;
@@ -245,19 +249,15 @@ public class Server {
 								state.getView_number(), state.getUsingIp());
 						System.err.println("UsingIp: " + state.getUsingIp());
 						try {
+							int i = 0;
 							for (String ip : state.getConfiguration()) {
-								if (!state.getUsingIp().equals(ip)) {
-									backUpServer
-											.send(startViewChange, InetAddress
-													.getByName(ip), Integer
-													.parseInt(state
-															.getProperties()
-															.getProperty(
-																	"PServer")));
-									System.out
-											.println("Start View Message sended to after receving a Start_VIEW_CHANGE: "
-													+ ip);
+								if (!state.getUsingAddress().equals(ip)) {
+									backUpServer.send(startViewChange, InetAddress.getByName(ip), Integer
+											.parseInt(state.getProperties()
+													.getProperty("P"+ i)));
+									System.out.println("Start View Message sended to after receving a Start_VIEW_CHANGE: " + ip);
 								}
+								i++;
 							}
 						} catch (NumberFormatException e) {
 							// TODO Auto-generated catch block
@@ -288,16 +288,7 @@ public class Server {
 									state.getCommit_number(),
 									state.getUsingIp());
 							try {
-								backUpServer
-										.send(doViewChange,
-												InetAddress.getByName(state
-														.getConfiguration()
-														.get(state
-																.getView_number()
-																% state.getConfiguration()
-																		.size())),
-												Integer.parseInt(properties
-														.getProperty("PServer")));
+								backUpServer.send(doViewChange,	InetAddress.getByName(state.getConfiguration().get(state.getView_number() % state.getConfiguration().size())), Integer.parseInt(properties.getProperty("PServer")+(state.getView_number()%Integer.parseInt(properties.getProperty("NumberOfIps")))));
 								System.out
 										.println("DoViewChange Message Sended to the future primary, Witch is: "
 												+ state.getConfiguration()
@@ -324,19 +315,21 @@ public class Server {
 								MessageType.START_VIEW_CHANGE,
 								state.getView_number(), state.getUsingIp());
 						try {
+							int i = 0;
 							for (String ip : state.getConfiguration()) {
-								if (!state.getUsingIp().equals(ip)) {
+								if (!state.getUsingAddress().equals(ip)) {
 									backUpServer
 											.send(startViewChange, InetAddress
-													.getByName(ip), Integer
+													.getByName(ip.split(":")[0]), Integer
 													.parseInt(state
 															.getProperties()
 															.getProperty(
-																	"PServer")));
+																	"PServer")+i));
 									System.out
 											.println("Start View Message sended to after receving a DO_VIEW_CHANGE: "
 													+ ip);
 								}
+								i++;
 							}
 						} catch (NumberFormatException e) {
 							// TODO Auto-generated catch block
@@ -372,20 +365,22 @@ public class Server {
 									state.getOp_number(),
 									state.getCommit_number());
 							try {
+								int i = 0;
 								for (String ip : state.getConfiguration()) {
-									if (!state.getUsingIp().equals(ip)) {
+									if (!state.getUsingAddress().equals(ip)) {
 										backUpServer
 												.send(startView,
 														InetAddress
-																.getByName(ip),
+																.getByName(ip.split(":")[0]),
 														Integer.parseInt(state
 																.getProperties()
 																.getProperty(
-																		"PServer")));
+																		"PServer")+i));
 										System.out
 												.println("Start View Message sended to: "
 														+ ip);
 									}
+									i++;
 								}
 							} catch (NumberFormatException e) {
 								// TODO Auto-generated catch block
@@ -421,7 +416,7 @@ public class Server {
 								"");// Temos que ver
 									// isto melhor
 						backUpServer.send(prepareOk, ipPrimary, Integer
-								.parseInt(properties.getProperty("PServer")));// Pode
+								.parseInt(properties.getProperty("PServer")+(state.getView_number()%Integer.parseInt(properties.getProperty("NumberOfIps")))));// Pode
 																				// haver
 																				// um
 																				// problema
@@ -441,7 +436,14 @@ public class Server {
 	}
 
 	public static void main(String[] args) {
-		new Server();
+		int port = 0; 
+		try{
+			port = Integer.parseInt(args[0]);
+		}catch(NumberFormatException e){
+			System.out.println("The inserted port is not a valid one");
+			System.exit(-1);
+		}
+		new Server(port);
 		System.out.println("New Server Created!");
 	}
 }

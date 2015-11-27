@@ -86,7 +86,7 @@ public class Network {
 			DatagramPacket sendPacket = new DatagramPacket(dataSend,
 					dataSend.length, ip, portDestination);
 			System.out
-					.println("Sending to " + ip.getHostAddress() + ":" + port);
+					.println("Sending to " + ip.getHostAddress() + ":" + portDestination);
 			socket.send(sendPacket);
 			outputStream.close();
 			os.close();

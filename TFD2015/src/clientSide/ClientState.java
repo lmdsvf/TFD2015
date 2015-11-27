@@ -28,7 +28,7 @@ public class ClientState {
 			int NUMBEROFIPS = Integer.parseInt(properties
 					.getProperty("NumberOfIps"));
 			for (int i = 0; i < NUMBEROFIPS; i++) {
-				configuration.add(properties.get("IP" + i).toString());
+				configuration.add(properties.get("IP" + i).toString()+":"+properties.getProperty("P"+i).toString());
 			}
 			configuration.sort(null);
 		} catch (UnknownHostException e) {

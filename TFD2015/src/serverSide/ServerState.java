@@ -18,39 +18,38 @@ public class ServerState {
 	private int op_number = 0;
 	private ArrayList<Message> log;
 	private int commit_number = 0;
-	private String usingIp;
+	private String usingAddress;
 	private int lastest_normal_view_change = 0;
 	private HashMap<String, Tuple> clientTable;
 	private Properties properties;
 	private int NUMBEROFIPS;
-
-	public ServerState() {
+	
+	public ServerState(int port) {
 		try {
 			properties = new Properties();
 			properties.load(new FileReader("Configuration.txt"));
 			configuration = new ArrayList<String>();
-			NUMBEROFIPS = Integer.parseInt(properties
-					.getProperty("NumberOfIps"));
+			NUMBEROFIPS = Integer.parseInt(properties.getProperty("NumberOfIps"));
 			for (int i = 0; i < NUMBEROFIPS; i++) {
-				configuration.add(properties.get("IP" + i).toString());
+				configuration.add(properties.get("IP" + i).toString() + ":" + properties.getProperty("P" + i).toString());
 			}
 			configuration.sort(null);
 			System.out.println("Getting my ip!");
-			usingIp = null;
+			usingAddress = null;
 			for (String ip : configuration) {
 				for (String my_ip : Network.getAllIps()) {
 					System.out.println("Testing " + ip + " with " + my_ip);
-					if (ip.equals(my_ip)) {
+					if (ip.equals(my_ip+":"+ port)) {
 						System.out.println("got it");
-						usingIp = ip;
+						usingAddress = ip;
 						break;
 					}
 				}
-				if (usingIp != null)
+				if (usingAddress != null)
 					break;
 			}
-			System.out.println("My ip: " + usingIp);
-			replica_number = configuration.indexOf(usingIp);
+			System.out.println("My ip: " + usingAddress);
+			replica_number = configuration.indexOf(usingAddress);
 			status = Status.NORMAL;
 			log = new ArrayList<Message>();
 			clientTable = new HashMap<String, Tuple>();
@@ -67,7 +66,11 @@ public class ServerState {
 	}
 
 	public String getUsingIp() {
-		return usingIp;
+		return usingAddress.split(":")[0];
+	}
+	
+	public String getUsingAddress(){
+		return usingAddress;
 	}
 
 	public ArrayList<String> getConfiguration() {
