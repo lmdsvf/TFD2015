@@ -85,8 +85,8 @@ public class Network {
 			byte[] dataSend = outputStream.toByteArray();
 			DatagramPacket sendPacket = new DatagramPacket(dataSend,
 					dataSend.length, ip, portDestination);
-			System.out
-					.println("Sending to " + ip.getHostAddress() + ":" + portDestination);
+			System.out.println("Sending to " + ip.getHostAddress() + ":"
+					+ portDestination);
 			socket.send(sendPacket);
 			outputStream.close();
 			os.close();
@@ -174,6 +174,10 @@ public class Network {
 
 	public int getLocalPort() {
 		return socket.getLocalPort();
+	}
+
+	public void closePort() {
+		socket.close();
 	}
 
 	public int getTimeout() {

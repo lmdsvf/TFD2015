@@ -14,18 +14,23 @@ import message.MessageType;
 import network.Network;
 
 public class Server {
-	
+
 	private ServerState state;
 	private Properties properties;
 	private ArrayList<Message> bufferForMessagesWithToHigherOpNumber;
 	private int port;
-	
+	private boolean firstToNotice = false;
+	private boolean broacastStartViewMessage = false;
+	private boolean broadcastDoVIewChange = false;
+	private KeepingPortOpen k;
+	private boolean beginClientServer = false;
+
 	public Server(int port) {
 		this.port = port;
 		state = new ServerState(port);
 		properties = state.getProperties();
 		bufferForMessagesWithToHigherOpNumber = new ArrayList<Message>();
-		
+
 		try {
 			properties.load(new FileReader("Configuration.txt"));
 		} catch (FileNotFoundException e) {
@@ -33,18 +38,19 @@ public class Server {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		int mod = state.getView_number() % state.getConfiguration().size();
-		
+
 		// primario
 		if (mod == state.getReplica_number()) {
 			new StartServicingClient(state).start();
 			System.out.println("Primario esta Disponivel");
-			
-		// replica
+
+			// replica
 		} else {
 			// Instancia network para fazer recovery
-			new KeepingPortOpen().start();
+			k = new KeepingPortOpen();
+			k.start();
 		}
 	}
 
@@ -81,21 +87,27 @@ public class Server {
 					/**** View Changing! ****/
 					System.out.println("View Changing!");
 					// Aqui será o ViewChange
+					firstToNotice = true;
+					broacastStartViewMessage = true;
 					state.setLastest_normal_view_change(state.getView_number());
 					state.view_numer_increment();
 					state.setStatus(Status.VIEWCHANGE);
 					Message startViewChange = new Message(
 							MessageType.START_VIEW_CHANGE,
-							state.getView_number(), state.getUsingIp());
+							state.getView_number(), state.getUsingAddress());
 					try {
 						int i = 0;
 						for (String ip : state.getConfiguration()) {
 							if (!state.getUsingAddress().equals(ip)) {
-								backUpServer.send(startViewChange, InetAddress
-										.getByName(ip.split(":")[0]), Integer
-										.parseInt(state.getProperties()
-												.getProperty("P"+ i)));
-								System.out.println("Start View Message sended to: "	+ ip);
+								backUpServer
+										.send(startViewChange, InetAddress
+												.getByName(ip.split(":")[0]),
+												Integer.parseInt(state
+														.getProperties()
+														.getProperty("P" + i)));
+								System.out
+										.println("Start View Message sended to: "
+												+ ip);
 							}
 							i++;
 						}
@@ -149,6 +161,7 @@ public class Server {
 					}
 					state.setLog(possibleLogsWithOp_number.get(
 							possibleLogsWithOp_number.size() - 1).getLog());
+
 					state.setCommit_number(possibleLogsWithOp_number.get(
 							possibleLogsWithOp_number.size() - 1)
 							.getCommit_Number());
@@ -160,7 +173,8 @@ public class Server {
 			public void run() {
 				switch (msg.getType()) {
 				case PREPARE:
-					System.out.println("Prepare Message Received with Request message from client: "
+					System.out
+							.println("Prepare Message Received with Request message from client: "
 									+ msg.getClient_Message().getClient_Id());
 					if (!state.getClientTable().containsKey(
 							msg.getClient_Message().getClient_Id())) {
@@ -170,7 +184,8 @@ public class Server {
 										INCIALRESULTVALUEINTUPLE));
 					}
 					if (msg.getOperation_number() > (state.getLog().size() + 1)) {
-						System.out.println("Operation Number recieved to high! Went to the Buffer!");
+						System.out
+								.println("Operation Number recieved to high! Went to the Buffer!");
 						bufferForMessagesWithToHigherOpNumber.add(msg);
 					} else if (msg.getOperation_number() == (state.getLog()
 							.size() + 1)) {
@@ -204,8 +219,13 @@ public class Server {
 						Message prepareOk = new Message(MessageType.PREPARE_OK,
 								state.getView_number(), state.getOp_number(),
 								state.getUsingIp());
-						backUpServer.send(prepareOk, ipPrimary, Integer
-								.parseInt(properties.getProperty("PServer")+(state.getView_number()%Integer.parseInt(properties.getProperty("NumberOfIps")))));
+						backUpServer
+								.send(prepareOk,
+										ipPrimary,
+										Integer.parseInt(properties
+												.getProperty("PServer")
+												+ (state.getView_number() % Integer.parseInt(properties
+														.getProperty("NumberOfIps")))));
 						DealingWithBuffer();
 					}
 					break;
@@ -236,97 +256,31 @@ public class Server {
 					break;
 
 				case START_VIEW_CHANGE:
-					if (state.getView_number() < msg.getView_number()) {
-						System.out
-								.println("Start View Change Message Received!");
-
+					System.out
+							.println("Start View Message received and was sended by: "
+									+ msg.getBackUp_Ip());
+					if (!firstToNotice && !broacastStartViewMessage) {
 						state.setLastest_normal_view_change(state
 								.getView_number());
 						state.view_numer_increment();
 						state.setStatus(Status.VIEWCHANGE);
 						Message startViewChange = new Message(
 								MessageType.START_VIEW_CHANGE,
-								state.getView_number(), state.getUsingIp());
-						System.err.println("UsingIp: " + state.getUsingIp());
-						try {
-							int i = 0;
-							for (String ip : state.getConfiguration()) {
-								if (!state.getUsingAddress().equals(ip)) {
-									backUpServer.send(startViewChange, InetAddress.getByName(ip), Integer
-											.parseInt(state.getProperties()
-													.getProperty("P"+ i)));
-									System.out.println("Start View Message sended to after receving a Start_VIEW_CHANGE: " + ip);
-								}
-								i++;
-							}
-						} catch (NumberFormatException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (UnknownHostException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						int f = (state.getNUMBEROFIPS() - 1) / 2;
-						int i = 1;
-						while (i != f) {
-							DatagramPacket start = backUpServer.receive();// VER
-							// ISTO // MELHOR // A // SÉRIO!!
-							if (start != null) {
-								i++;
-							} else
-								break;
-							System.err.println("StartVIEWCHANGE Loop");
-						}
-						System.out.println("NUMBER OF FAULTS: " + f + " i: "
-								+ i);
-						if (i >= f) {
-							Message doViewChange = new Message(
-									MessageType.DO_VIEW_CHANGE,
-									state.getView_number(), state.getLog(),
-									state.getLastest_normal_view_change(),
-									state.getOp_number(),
-									state.getCommit_number(),
-									state.getUsingIp());
-							try {
-								backUpServer.send(doViewChange,	InetAddress.getByName(state.getConfiguration().get(state.getView_number() % state.getConfiguration().size())), Integer.parseInt(properties.getProperty("PServer")+(state.getView_number()%Integer.parseInt(properties.getProperty("NumberOfIps")))));
-								System.out
-										.println("DoViewChange Message Sended to the future primary, Witch is: "
-												+ state.getConfiguration()
-														.get(state
-																.getView_number()
-																% state.getConfiguration()
-																		.size()));
-							} catch (NumberFormatException e) {
-								e.printStackTrace();
-							} catch (UnknownHostException e) {
-								e.printStackTrace();
-							}
-						}
-					}
-					break;
-				case DO_VIEW_CHANGE:
-					if (state.getView_number() < msg.getView_number()) {
-						System.out.println("Do View Change Message Received!");
-						state.setLastest_normal_view_change(state
-								.getView_number());
-						state.view_numer_increment();
-						state.setStatus(Status.VIEWCHANGE);
-						Message startViewChange = new Message(
-								MessageType.START_VIEW_CHANGE,
-								state.getView_number(), state.getUsingIp());
+								state.getView_number(), state.getUsingAddress());
 						try {
 							int i = 0;
 							for (String ip : state.getConfiguration()) {
 								if (!state.getUsingAddress().equals(ip)) {
 									backUpServer
-											.send(startViewChange, InetAddress
-													.getByName(ip.split(":")[0]), Integer
-													.parseInt(state
+											.send(startViewChange,
+													InetAddress.getByName(ip
+															.split(":")[0]),
+													Integer.parseInt(state
 															.getProperties()
 															.getProperty(
-																	"PServer")+i));
+																	"P" + i)));
 									System.out
-											.println("Start View Message sended to after receving a DO_VIEW_CHANGE: "
+											.println("Start View Message sended to: "
 													+ ip);
 								}
 								i++;
@@ -338,72 +292,250 @@ public class Server {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						int fdo = (state.getNUMBEROFIPS() - 1) / 2;
-						int ido = 1;
-						ArrayList<Message> aux = new ArrayList<Message>();
-						DatagramPacket start = null;
-						while (ido != fdo + 1) {
-							start = null;
-							start = backUpServer.receive();// VER //ISTO //
-															// MELHOR
-															// // A // SÉRIO!! E
-															// fazer com que as
-															// replicas sejam
-															// diferentes, //
-															// garantir vá.
-							if (start != null) {
-								aux.add(Network.networkToMessage(start));
-								ido++;
-							} else
-								break;
-						}
-						if (ido >= fdo + 1) {// Ver ISto melhor
-							getNewLogAndViewNumber(aux);
-							Message startView = new Message(
-									MessageType.START_VIEW,
-									state.getView_number(), state.getLog(),
-									state.getOp_number(),
-									state.getCommit_number());
-							try {
-								int i = 0;
-								for (String ip : state.getConfiguration()) {
-									if (!state.getUsingAddress().equals(ip)) {
-										backUpServer
-												.send(startView,
-														InetAddress
-																.getByName(ip.split(":")[0]),
-														Integer.parseInt(state
-																.getProperties()
-																.getProperty(
-																		"PServer")+i));
-										System.out
-												.println("Start View Message sended to: "
-														+ ip);
-									}
-									i++;
-								}
-							} catch (NumberFormatException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (UnknownHostException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							state.setStatus(Status.NORMAL);
+						broacastStartViewMessage = true;
+					}
+					int f = (Integer.parseInt(state.getProperties()
+							.get("NumberOfIps").toString()) - 1) / 2;
+					System.out.println("Number of faults: " + f);
+					int i = 1;
+					while (i < f) {
+						Message startViewMessage = Network
+								.networkToMessage(backUpServer.receive());
+						if (startViewMessage.getType().equals(
+								MessageType.START_VIEW_CHANGE)) {
+							i++;
 						}
 					}
+					System.out
+							.println("Number of faults and number of messages of startViewChange received: "
+									+ f + " - " + i);
+					Message doViewChange = new Message(
+							MessageType.DO_VIEW_CHANGE, state.getView_number(),
+							state.getLog(),
+							state.getLastest_normal_view_change(),
+							state.getOp_number(), state.getCommit_number(),
+							state.getUsingAddress());
+					try {
+						// if (!state
+						// .getConfiguration()
+						// .get(state.getView_number()
+						// % state.getConfiguration().size())
+						// .equals(state.getUsingAddress())) {
+						backUpServer.send(doViewChange, InetAddress
+								.getByName((state.getConfiguration().get(state
+										.getView_number()
+										% state.getConfiguration().size()))
+										.split(":")[0]), Integer
+								.parseInt((state.getConfiguration().get(state
+										.getView_number()
+										% state.getConfiguration().size()))
+										.split(":")[1]));
+						// } else
+						broadcastDoVIewChange = true;
+						System.out
+								.println("The doViewChange message sended...");
+					} catch (NumberFormatException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (UnknownHostException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					break;
+				case DO_VIEW_CHANGE:
+					System.out.println("DoViewChange message receveided by: "
+							+ msg.getBackUp_Ip());
+					System.out.println("Debbuging doviewchange "
+							+ msg.getType());
+					ArrayList<Message> receivedDoStartViewMessages = new ArrayList<Message>();
+					receivedDoStartViewMessages.add(msg);
+					// Acho que é um bocado impossivel de isto acontecer, só
+					// caso extremamente exceptional
+					if (!firstToNotice && !broacastStartViewMessage) {
+						System.out.println("Entrou no ! !");
+						state.setLastest_normal_view_change(state
+								.getView_number());
+						state.view_numer_increment();
+						state.setStatus(Status.VIEWCHANGE);
+					}
+					Message startViewChange = new Message(
+							MessageType.START_VIEW_CHANGE,
+							state.getView_number(), state.getUsingAddress());
+					try {
+						int i2 = 0;
+						for (String ip : state.getConfiguration()) {
+							if (!state.getUsingAddress().equals(ip)) {
+								backUpServer
+										.send(startViewChange, InetAddress
+												.getByName(ip.split(":")[0]),
+												Integer.parseInt(state
+														.getProperties()
+														.getProperty("P" + i2)));
+								System.out
+										.println("Start View Message sended to: "
+												+ ip);
+							}
+							i2++;
+						}
+					} catch (NumberFormatException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (UnknownHostException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					broacastStartViewMessage = true;
+
+					int fdo = ((Integer.parseInt(state.getProperties()
+							.get("NumberOfIps").toString()) - 1) / 2) + 1;
+					System.out.println("Number of faults +1: " + fdo);
+					int ido = 1;
+					while (ido < fdo) {
+						Message doViewMessage = Network
+								.networkToMessage(backUpServer
+										.receiveViewChange());
+						if (doViewMessage == null) {
+							continue;
+						}
+						System.out.println("Debbuging doviewchange loop "
+								+ doViewMessage.getType());
+						if (doViewMessage.getType().equals(
+								MessageType.DO_VIEW_CHANGE)) {
+							receivedDoStartViewMessages.add(doViewMessage);
+							ido++;
+						}
+					}
+					System.out
+							.println("Number of faults and number of messages of doViewChange received: "
+									+ fdo + " - " + ido);
+					// Check if the viewNumbers of the messages are equal to my
+					System.out.println("Number of messages: "
+							+ receivedDoStartViewMessages.size());
+					boolean allSameViewNumber = true;
+					for (Message received : receivedDoStartViewMessages) {
+						if (received.getView_number() != state.getView_number()) {
+							allSameViewNumber = false;
+							break;
+						}
+					}
+					if (allSameViewNumber)
+						System.out.println("Everyone in the same viewNumber");
+					// Selecting the log 1º largest v' after n
+					int biggestViewNumber = 0;
+					ArrayList<Message> possibleLogs = new ArrayList<Message>();
+					for (Message m : receivedDoStartViewMessages) {
+						if (biggestViewNumber < m.getView_number()) {
+							biggestViewNumber = m.getView_number();
+						}
+					}
+					System.out.println("Biggest ViewNumber is "
+							+ biggestViewNumber);
+					state.setView_number(biggestViewNumber);// Confirmar
+					for (Message m : receivedDoStartViewMessages) {
+						if (biggestViewNumber == m.getView_number()) {
+							System.out.println("Message added.");
+							possibleLogs.add(m);
+						}
+					}
+					if (possibleLogs.size() > 1) {
+						System.out
+								.println("More than one message with the biggest view number.");
+						int biggestOpNumber = 0;
+						for (Message futureOpNumber : possibleLogs) {
+							if (biggestOpNumber < futureOpNumber
+									.getOperation_number()) {
+								biggestOpNumber = futureOpNumber
+										.getOperation_number();
+							}
+						}
+						for (Message futureOpNumber : possibleLogs) {
+							if (biggestOpNumber == futureOpNumber
+									.getOperation_number()) {
+								if (futureOpNumber.getLog().size() != 0) {
+									System.out
+											.println("Log with some information.");
+									state.setLog(futureOpNumber.getLog());
+								} else
+									state.setLog(new ArrayList<Message>());
+							}
+						}
+					} else {
+						if (possibleLogs.get(0).getLog().size() != 0) {
+							System.out
+									.println("Log with some information. In this case, only one has been in the possibleLogs array.");
+							state.setLog(possibleLogs.get(0).getLog());
+						} else
+							state.setLog(new ArrayList<Message>());
+					}
+
+					// set opNumber with log size
+					state.setOp_number(state.getLog().size());
+					System.out.println("Final Op_number: "
+							+ state.getOp_number());
+					// set commit_Number with largest commit_Number received
+					// in all messages
+					int biggestCommitNumber = 0;
+					for (Message m : receivedDoStartViewMessages) {
+						if (biggestCommitNumber < m.getCommit_Number()) {
+							System.out.println("Message added.");
+							biggestCommitNumber = m.getCommit_Number();
+						}
+					}
+					state.setCommit_number(biggestCommitNumber);
+					System.out.println("Final CommitNumber: "
+							+ state.getCommit_number());
+					// Status to Normal
+					state.setStatus(Status.NORMAL);
+
+					// Sending startView message
+					Message startView = new Message(MessageType.START_VIEW,
+							state.getView_number(), state.getLog(),
+							state.getOp_number(), state.getCommit_number());
+					try {
+						int isv = 0;
+						for (String ip : state.getConfiguration()) {
+							if (!state.getUsingAddress().equals(ip)) {
+								backUpServer
+										.send(startView,
+												InetAddress.getByName(ip
+														.split(":")[0]),
+												Integer.parseInt(state
+														.getProperties()
+														.getProperty("P" + isv)));
+								System.out
+										.println("Start View Message sended to: "
+												+ ip);
+							}
+							isv++;
+						}
+					} catch (NumberFormatException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (UnknownHostException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					beginClientServer = true;
+
 					break;
 				case START_VIEW:
-					System.out.println("Start View Message Received!");
+					System.out
+							.println("Start View message receveided it was sended by: "
+									+ msg.getBackUp_Ip());
 					state.setView_number(msg.getView_number());
-					state.setCommit_number(msg.getCommit_Number());
 					state.setLog(msg.getLog());
 					state.setOp_number(msg.getOperation_number());
-					state.setStatus(Status.NORMAL);
-					new StartServicingClient(state);
+					state.setCommit_number(msg.getCommit_Number());
+					// Missing the Updating The Client Table
 					break;
 				default:
 					break;
+				}
+				if (beginClientServer) {
+					k.interrupt();
+					new StartServicingClient(state).start();
 				}
 			}
 
@@ -415,13 +547,18 @@ public class Server {
 								state.getView_number(), state.getOp_number(),
 								"");// Temos que ver
 									// isto melhor
-						backUpServer.send(prepareOk, ipPrimary, Integer
-								.parseInt(properties.getProperty("PServer")+(state.getView_number()%Integer.parseInt(properties.getProperty("NumberOfIps")))));// Pode
-																				// haver
-																				// um
-																				// problema
-																				// aqui!
-																				// ipPrimary
+						backUpServer
+								.send(prepareOk,
+										ipPrimary,
+										Integer.parseInt(properties
+												.getProperty("PServer")
+												+ (state.getView_number() % Integer.parseInt(properties
+														.getProperty("NumberOfIps")))));// Pode
+						// haver
+						// um
+						// problema
+						// aqui!
+						// ipPrimary
 					} else {
 						aux.add(m);
 					}
@@ -436,10 +573,10 @@ public class Server {
 	}
 
 	public static void main(String[] args) {
-		int port = 0; 
-		try{
+		int port = 0;
+		try {
 			port = Integer.parseInt(args[0]);
-		}catch(NumberFormatException e){
+		} catch (NumberFormatException e) {
 			System.out.println("The inserted port is not a valid one");
 			System.exit(-1);
 		}
