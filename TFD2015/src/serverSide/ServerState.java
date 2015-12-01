@@ -49,7 +49,7 @@ public class ServerState {
 					break;
 			}
 			
-			// so para verificar se o ip:port é encontrado no ficheiro de configuraçao
+			// so para verificar se o ip:port ï¿½ encontrado no ficheiro de configuraï¿½ao
 			if(usingAddress == null){
 				System.out.println("Inserted IP or Port is not on the configuration file...");
 				System.exit(-1);
@@ -156,7 +156,7 @@ public class ServerState {
 		this.commit_number += 1;
 	}
 
-	public void view_numer_increment() {
+	public void view_number_increment() {
 		this.view_number += 1;
 	}
 
