@@ -120,7 +120,8 @@ public class StartServicingClient extends Thread {
 							state.getCommit_number());
 					try {
 						int i = 0;
-						for (String ip : state.getConfiguration()) {
+						for (String address : state.getConfiguration()) {
+							String ip = address.split(":")[0];
 							server.send(prepare, InetAddress.getByName(ip),
 									Integer.parseInt(state.getProperties()
 											.getProperty("PServer"))+i);

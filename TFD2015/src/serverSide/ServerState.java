@@ -48,6 +48,13 @@ public class ServerState {
 				if (usingAddress != null)
 					break;
 			}
+			
+			// so para verificar se o ip:port é encontrado no ficheiro de configuraçao
+			if(usingAddress == null){
+				System.out.println("Inserted IP or Port is not on the configuration file...");
+				System.exit(-1);
+			}
+				
 			System.out.println("My ip: " + usingAddress);
 			replica_number = configuration.indexOf(usingAddress);
 			status = Status.NORMAL;

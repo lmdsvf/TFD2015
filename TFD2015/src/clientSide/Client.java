@@ -45,7 +45,7 @@ public class Client {
 	}
 
 	private void readConfiguration() {
-		serverAddress = state.getConfiguration().get(0);
+		serverAddress = state.getConfiguration().get(0).split(":")[0];
 		port = Integer.parseInt(state.getProperties().getProperty("PClient"));
 		net = new Network(serverAddress, port);
 	}
@@ -58,12 +58,29 @@ public class Client {
 		try {
 			net.send(msg, InetAddress.getByName(serverAddress), port);
 			DatagramPacket data = net.receive();
+
 			/***** Broadcast *****/
-			/*
-			 * if (data == null) { for (String ip : state.getConfiguration()) {
-			 * Network newNet = new Network(ip, port); newNet.receive(); } }
-			 */
+			Network newNet = null;
+			if (data == null) { 
+				for (String address : state.getConfiguration()) {
+					String ip = address.split(":")[0];
+					
+					newNet = new Network(ip, port);
+					newNet.send(msg, InetAddress.getByName(ip), port);
+					data = newNet.receive();
+					
+					if(data != null){
+						break;
+					}
+				} 
+			}
+			
 			Message reply = Network.networkToMessage(data);
+			state.request_number_increment();
+			if(state.getView_number() != reply.getView_number()){
+				state.setView_number(reply.getView_number());
+				net = newNet;
+			}
 			System.out.println(reply.getResult());
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
