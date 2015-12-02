@@ -62,7 +62,7 @@ public class Server {
 		private int numberOfStartViewChangeMessagesReceveid = 0;
 		private int faultsLimit = (Integer.parseInt(state.getProperties()
 				.get("NumberOfIps").toString()) - 1) / 2;
-		private boolean updateAfterStartViewMEssageReceived = false;
+		private boolean updateAfterStartViewMessageReceived = false;
 
 		@Override
 		public void run() {
@@ -98,36 +98,15 @@ public class Server {
 					firstToNotice = true;
 					broacastStartViewMessage = true;
 					waittingInViewChange = true;
-					updateAfterStartViewMEssageReceived = true;
+					updateAfterStartViewMessageReceived = true;
 					state.setLastest_normal_view_change(state.getView_number());
 					state.view_number_increment();
 					state.setStatus(Status.VIEWCHANGE);
 					Message startViewChange = new Message(
 							MessageType.START_VIEW_CHANGE,
 							state.getView_number(), state.getUsingAddress());
-					try {
-						int i = 0;
-						for (String ip : state.getConfiguration()) {
-							if (!state.getUsingAddress().equals(ip)) {
-								backUpServer
-										.send(startViewChange, InetAddress
-												.getByName(ip.split(":")[0]),
-												Integer.parseInt(state
-														.getProperties()
-														.getProperty("P" + i)));
-								System.out
-										.println("Start View Message sended to: "
-												+ ip);
-							}
-							i++;
-						}
-					} catch (NumberFormatException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (UnknownHostException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					
+					backUpServer.broadcastToServers(startViewChange, state.getConfiguration(), state.getUsingAddress());
 				}
 			}
 		}
@@ -266,17 +245,19 @@ public class Server {
 					break;
 
 				case START_VIEW_CHANGE:
-					System.out
-							.println("Start View Message received and was sended by: "
+					System.out.println("Start View Message received and was sended by: "
 									+ msg.getBackUp_Ip());
-					if (!updateAfterStartViewMEssageReceived) {
-						state.setLastest_normal_view_change(state
-								.getView_number());
+					if(state.getStatus() != Status.VIEWCHANGE){
+						state.setLastest_normal_view_change(state.getView_number());
 						state.view_number_increment();
 						state.setStatus(Status.VIEWCHANGE);
-						updateAfterStartViewMEssageReceived = true;
+						updateAfterStartViewMessageReceived = true;
 					}
-					numberOfStartViewChangeMessagesReceveid++;
+					
+					if(msg.getView_number() == state.getView_number()){
+						numberOfStartViewChangeMessagesReceveid++;
+					}	
+						
 					if (numberOfStartViewChangeMessagesReceveid >= faultsLimit) {
 						Message doViewChange = new Message(
 								MessageType.DO_VIEW_CHANGE,
@@ -305,6 +286,7 @@ public class Server {
 						}
 						numberOfStartViewChangeMessagesReceveid = 0;
 					}
+					
 					// if (!firstToNotice && !broacastStartViewMessage) {
 					// state.setLastest_normal_view_change(state
 					// .getView_number());

@@ -76,6 +76,20 @@ public class Network {
 	public int getTimeoutViewChange() {
 		return timeoutViewChange;
 	}
+	
+	public void broadcastToServers(Message m, ArrayList<String> addresses, String usingAddress){
+		try{
+			for (String address : addresses) {
+				if (!usingAddress.equals(address)) {
+					String[] addr = address.split(":");
+					send(m, InetAddress.getByName(addr[0]),Integer.parseInt(addr[1]));
+					System.out.println("Start View Message sended to: "	+ address);
+				}
+			}
+		}catch(UnknownHostException e){
+			e.printStackTrace();
+		}
+	}
 
 	public void send(Message data, InetAddress ip, int portDestination) {
 		try {
@@ -85,8 +99,7 @@ public class Network {
 			byte[] dataSend = outputStream.toByteArray();
 			DatagramPacket sendPacket = new DatagramPacket(dataSend,
 					dataSend.length, ip, portDestination);
-			System.out.println("Sending to " + ip.getHostAddress() + ":"
-					+ portDestination);
+			System.out.println("Sending to " + ip.getHostAddress() + ":" + portDestination);
 			socket.send(sendPacket);
 			outputStream.close();
 			os.close();
