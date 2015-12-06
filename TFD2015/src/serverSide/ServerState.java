@@ -113,6 +113,7 @@ public class ServerState {
 	}
 
 	public void setStatus(Status status) {
+		System.out.println("Changing status: " + status);
 		this.status = status;
 	}
 

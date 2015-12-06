@@ -64,8 +64,7 @@ public class Network {
 		try {
 			p.load(new FileReader("Configuration.txt"));
 			this.timeout = Integer.parseInt(p.getProperty("T"));
-			this.timeoutViewChange = Integer.parseInt(p
-					.getProperty("TViewChange"));
+			this.timeoutViewChange = Integer.parseInt(p.getProperty("TViewChange"));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -77,26 +76,18 @@ public class Network {
 		return timeoutViewChange;
 	}
 
-	public void broadcastToServers(Message m, ArrayList<String> addresses,
-			String usingAddress, boolean sendToMySelf) {
+	public void broadcastToServers(Message m, ArrayList<String> addresses, String usingAddress, boolean sendToMySelf) {
 		try {
 			for (String address : addresses) {
 				if (sendToMySelf) {
 					String[] addr = address.split(":");
-					send(m, InetAddress.getByName(addr[0]),
-							Integer.parseInt(addr[1]));
-					System.out.println("Start View Message sended to: "
-							+ address);
+					send(m, InetAddress.getByName(addr[0]), Integer.parseInt(addr[1]));
 				} else {
-					
 					if (!usingAddress.equals(address)) {
 						String[] addr = address.split(":");
-						send(m, InetAddress.getByName(addr[0]),
-								Integer.parseInt(addr[1]));
-						System.out.println("Start View Message sended to: "
-								+ address);
+						send(m, InetAddress.getByName(addr[0]), Integer.parseInt(addr[1]));
 					}
-					
+
 				}
 			}
 		} catch (UnknownHostException e) {
@@ -110,10 +101,8 @@ public class Network {
 			ObjectOutputStream os = new ObjectOutputStream(outputStream);
 			os.writeObject(data);
 			byte[] dataSend = outputStream.toByteArray();
-			DatagramPacket sendPacket = new DatagramPacket(dataSend,
-					dataSend.length, ip, portDestination);
-			System.out.println("Sending to " + ip.getHostAddress() + ":"
-					+ portDestination);
+			DatagramPacket sendPacket = new DatagramPacket(dataSend, dataSend.length, ip, portDestination);
+			System.out.println("Sending to " + ip.getHostAddress() + ":" + portDestination);
 			socket.send(sendPacket);
 			outputStream.close();
 			os.close();
@@ -124,8 +113,7 @@ public class Network {
 
 	public DatagramPacket receive() {
 		System.out.println("\n\nReceiving data...");
-		DatagramPacket receivedPacket = new DatagramPacket(receivedData,
-				receivedData.length);
+		DatagramPacket receivedPacket = new DatagramPacket(receivedData, receivedData.length);
 		try {
 			socket.setSoTimeout(timeout);
 			socket.receive(receivedPacket);
@@ -140,8 +128,7 @@ public class Network {
 
 	public DatagramPacket receiveViewChange() {
 		System.out.println("\n\nReceiving data...");
-		DatagramPacket receivedPacket = new DatagramPacket(receivedData,
-				receivedData.length);
+		DatagramPacket receivedPacket = new DatagramPacket(receivedData, receivedData.length);
 		try {
 			socket.setSoTimeout(timeoutViewChange);
 			socket.receive(receivedPacket);
