@@ -22,6 +22,9 @@ public class StartServicingClient extends Thread {
 
 	@Override
 	public void run() {
+		System.out.println(state.getReplica_number());
+System.out.println(Integer.parseInt(state.getProperties().getProperty("PClient")));
+		System.out.println(Integer.parseInt(state.getProperties().getProperty("PClient")) + state.getReplica_number());
 		server = new Network(Integer.parseInt(state.getProperties().getProperty("PClient")) + state.getReplica_number());
 		System.out.println("ServerSocket activa");
 		serverToserver = new Network(Integer.parseInt(state.getProperties().getProperty("PServer") + state.getReplica_number()));

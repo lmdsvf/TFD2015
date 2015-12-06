@@ -53,31 +53,31 @@ public class Client {
 	public void execute(String op) {
 		state.setIpAddress(net.getLocalIP() + ":" + net.getLocalPort());
 		state.request_number_increment();
-		Message msg = new Message(MessageType.REQUEST, op,
-				state.getIpAddress(), state.getRequest_number());
+		Message msg = new Message(MessageType.REQUEST, op, state.getIpAddress(), state.getRequest_number());
 		try {
+			System.out.println("Vamos la: " + serverAddress + " e " + port);
 			net.send(msg, InetAddress.getByName(serverAddress), port);
 			DatagramPacket data = net.receive(10000);
 
 			/***** Broadcast *****/
 			Network newNet = null;
-			if (data == null) { 
+			if (data == null) {
 				for (String address : state.getConfiguration()) {
 					String ip = address.split(":")[0];
-					
+
 					newNet = new Network(ip, port);
 					newNet.send(msg, InetAddress.getByName(ip), port);
 					data = newNet.receive(10000);
-					
-					if(data != null){
+
+					if (data != null) {
 						break;
 					}
-				} 
+				}
 			}
-			
+
 			Message reply = Network.networkToMessage(data);
 			state.request_number_increment();
-			if(state.getView_number() != reply.getView_number()){
+			if (state.getView_number() != reply.getView_number()) {
 				state.setView_number(reply.getView_number());
 				net = newNet;
 			}
