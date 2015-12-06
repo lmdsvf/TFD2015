@@ -57,7 +57,7 @@ public class Client {
 				state.getIpAddress(), state.getRequest_number());
 		try {
 			net.send(msg, InetAddress.getByName(serverAddress), port);
-			DatagramPacket data = net.receive();
+			DatagramPacket data = net.receive(10000);
 
 			/***** Broadcast *****/
 			Network newNet = null;
@@ -67,7 +67,7 @@ public class Client {
 					
 					newNet = new Network(ip, port);
 					newNet.send(msg, InetAddress.getByName(ip), port);
-					data = newNet.receive();
+					data = newNet.receive(10000);
 					
 					if(data != null){
 						break;

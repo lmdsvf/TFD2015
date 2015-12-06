@@ -1,5 +1,5 @@
 IP0=127.0.0.1P0=4989IP1=127.0.0.1P1=4990
 IP2=127.0.0.1P2=4991NumberOfIps=3
-PClient=4988
+PClient=4900
 PServer=4989
-T=10000TViewChange=20000
+T=10000TViewChange=25000

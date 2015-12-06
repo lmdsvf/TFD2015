@@ -111,26 +111,11 @@ public class Network {
 		}
 	}
 
-	public DatagramPacket receive() {
+	public DatagramPacket receive(int timeout) {
 		System.out.println("\n\nReceiving data...");
 		DatagramPacket receivedPacket = new DatagramPacket(receivedData, receivedData.length);
 		try {
 			socket.setSoTimeout(timeout);
-			socket.receive(receivedPacket);
-		} catch (SocketTimeoutException e) {
-			return null;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return receivedPacket;
-	}
-
-	public DatagramPacket receiveViewChange() {
-		System.out.println("\n\nReceiving data...");
-		DatagramPacket receivedPacket = new DatagramPacket(receivedData, receivedData.length);
-		try {
-			socket.setSoTimeout(timeoutViewChange);
 			socket.receive(receivedPacket);
 		} catch (SocketTimeoutException e) {
 			return null;

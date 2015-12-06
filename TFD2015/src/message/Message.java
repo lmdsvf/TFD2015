@@ -20,6 +20,7 @@ public class Message implements Serializable {
 	private int request_Number;
 	private ArrayList<Message> log;
 	private int lastest_Normal_View_Change;
+	private double nounce;
 
 	// Commit Message
 	public Message(MessageType commit, int view_number, int commit_number) {
@@ -36,7 +37,7 @@ public class Message implements Serializable {
 		this.request_Number = s;
 	}
 
-	// Reply Message e prepareOk
+	// Reply Message e prepareOk e GetSTATE
 	public Message(MessageType reply, int i, int i2, String string) {
 		this.type = reply;
 		switch (reply) {
@@ -49,6 +50,9 @@ public class Message implements Serializable {
 			this.view_number = i;
 			this.request_Number = i2;
 			this.backUp_Ip = string;
+			break;
+		case GETSTATE:
+
 			break;
 		default:
 			break;
@@ -86,7 +90,7 @@ public class Message implements Serializable {
 		this.backUp_Ip = backUpIp;
 	}
 
-	// Start View
+	// Start View e NEWSTATE
 	public Message(MessageType start_View, int view_number,
 			ArrayList<Message> log, int op_number, int commited_number) {
 		this.type = start_View;
@@ -95,6 +99,33 @@ public class Message implements Serializable {
 		this.operation_number = op_number;
 		this.commit_Number = commited_number;
 	}
+
+	/***** RECOVERY *****/
+	public Message(MessageType recovery, String recoveringMachineId,
+			double nounce) {
+		this.type = recovery;
+		this.backUp_Ip = recoveringMachineId;
+		this.nounce = nounce;
+	}
+
+	public Message(MessageType recoveryResponse, int view_number,
+			double nounce, ArrayList<Message> log, int op_number,
+			int commit_number, String machineId) {
+		this.type = recoveryResponse;
+		this.view_number = view_number;
+		this.nounce = nounce;
+		this.log = log;
+		this.operation_number = op_number;
+		this.commit_Number = commit_number;
+		this.backUp_Ip = machineId;
+	}
+
+	/************** State Transfer ****************/
+
+	// GetState Message has the same sctruture of the REPLY and PREPAREOK
+	// messages
+
+	// NewState is like StartView Message
 
 	/********** GETTERS **********/
 
@@ -184,6 +215,10 @@ public class Message implements Serializable {
 
 	public void setRequest_Number(int request_Number) {
 		this.request_Number = request_Number;
+	}
+
+	public double getNounce() {
+		return nounce;
 	}
 
 	public String toString() {
