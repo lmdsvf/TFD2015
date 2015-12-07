@@ -4,9 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Message implements Serializable {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 	private MessageType type;
 	private int view_number;

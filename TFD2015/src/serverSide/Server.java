@@ -198,7 +198,7 @@ public class Server {
 			public void run() {
 				switch (msg.getType()) {
 				case PREPARE:
-					System.out.println("Prepare Message Received with Request message from client: " + msg.getClient_Message().getClient_Id());
+					System.out.println("PREPARE received with Request message from client: " + msg.getClient_Message().getClient_Id());
 					if (!state.getClientTable().containsKey(msg.getClient_Message().getClient_Id())) {
 						state.getClientTable().put(msg.getClient_Message().getClient_Id(), new Tuple(INCIALOPNUMBERVALUEINTUPLE, INCIALRESULTVALUEINTUPLE));
 					}
@@ -226,7 +226,7 @@ public class Server {
 					}
 					break;
 				case COMMIT:
-					System.out.println("Commit received from: " + msg.getBackUp_Ip());
+					System.out.println("COMMIT received from: " + msg.getBackUp_Ip());
 					if (msg.getCommit_Number() == state.getCommit_number() + 1) {
 						state.setCommit_number(msg.getCommit_Number());
 						/* E aqui? */
@@ -245,7 +245,7 @@ public class Server {
 					break;
 
 				case START_VIEW_CHANGE:
-					System.out.println("Start View Change Message received and was sended by: " + msg.getBackUp_Ip());
+					System.out.println("START_VIEW_CHANGE received and was sended by: " + msg.getBackUp_Ip());
 
 					if (state.getStatus().equals(Status.NORMAL)) {
 						initialProcessForViewChange();
@@ -280,7 +280,7 @@ public class Server {
 					break;
 
 				case DO_VIEW_CHANGE:
-					System.out.println("DoViewChange received by: " + msg.getBackUp_Ip());
+					System.out.println("DO_VIEW_CHANGE received by: " + msg.getBackUp_Ip());
 
 					if (state.getStatus().equals(Status.NORMAL)) {
 						initialProcessForViewChange();
@@ -343,54 +343,17 @@ public class Server {
 						}
 					}
 
-					// if (numberOfDoViewChangeMessagesReceived.size() >=
-					// faultsLimit + 1) {
-					// int biggestViewNumber = 0;
-					// ArrayList<Message> messagesWithBiggestViewNumber = new
-					// ArrayList<Message>();
-					// Message auxBiggestViewNumberAndBiggestOpNumber = null;
-					// int biggestOpNumber = 0;
-					// for (Message message :
-					// numberOfDoViewChangeMessagesReceived) {// VAi
-					// // buscar
-					// // o
-					// // valor
-					// // maior
-					// // do
-					// // viewnumber
-					// if (message.getView_number() > biggestViewNumber) {
-					// biggestViewNumber = message.getView_number();
-					// messagesWithBiggestViewNumber.clear();
-					// messagesWithBiggestViewNumber.add(message);
-					// biggestOpNumber = message.getOperation_number();
-					// auxBiggestViewNumberAndBiggestOpNumber = message;
-					// } else if (message.getView_number() == biggestViewNumber)
-					// {
-					// messagesWithBiggestViewNumber.add(message);
-					// if (message.getOperation_number() > biggestOpNumber) {
-					// biggestOpNumber = message.getOperation_number();
-					// auxBiggestViewNumberAndBiggestOpNumber = message;
-					// }
-					// }
-					// }
-					//
-					// state.setView_number(auxBiggestViewNumberAndBiggestOpNumber.getView_number());
-					// state.setOp_number(auxBiggestViewNumberAndBiggestOpNumber.getOperation_number());
-					// state.setLog(auxBiggestViewNumberAndBiggestOpNumber.getLog());
-					//
-					// }
-
 					break;
 
 				case START_VIEW:
-					System.out.println("Received Start_View from: " + msg.getBackUp_Ip());
+					System.out.println("START_VIEW received from: " + msg.getBackUp_Ip());
 					state.setLog(msg.getLog());
 					if (msg.getLog().size() != 0)
 						state.setOp_number(msg.getLog().get(msg.getLog().size() - 1).getOperation_number());
 					else
 						state.setOp_number(0);
-					// OP NUMBER EM CASO DE TER LOG VAZIO...POE-SE O
-					// K???????????????
+					// TODO 
+					// OP NUMBER EM CASO DE TER LOG VAZIO...POE-SE O K???????????????
 					state.setView_number(msg.getView_number());
 					state.setStatus(Status.NORMAL);
 					// UPDATE CLIENT TABLE!!!
@@ -399,7 +362,7 @@ public class Server {
 					break;
 
 				case RECOVERY:
-					System.out.println("Recovery received!");
+					System.out.println("RECOVERY received!");
 					if (state.getStatus().equals(Status.NORMAL)) {
 						Message recoveryResponse;
 						int mod = state.getView_number() % state.getConfiguration().size();
@@ -425,7 +388,7 @@ public class Server {
 					if (msg.getNounce() == nounce) {
 						numberOfRecoveryResponseReceived++;
 						numberOfRecoveryResponseMessagesReceived.add(msg);
-						System.out.println("Recovery Response received! Now exists: " + numberOfRecoveryResponseReceived);
+						System.out.println("RECOVERY_RESPONSE received! Now exists: " + numberOfRecoveryResponseReceived);
 
 						if (numberOfRecoveryResponseReceived >= faultsLimit + 1) {
 							System.out.println("Before: " + "\nViewNumber: " + state.getView_number() + "\n Op_number: " + state.getOp_number() + "\n CommitNumber: " + state.getCommit_number()
@@ -441,13 +404,40 @@ public class Server {
 									numberOfRecoveryResponseMessagesReceived.clear();
 								}
 							}
-							System.out.println("Recory process done!");
+							System.out.println("Recovery process done!");
 							System.out.println("After: " + "\nViewNumber: " + state.getView_number() + "\n Op_number: " + state.getOp_number() + "\n CommitNumber: " + state.getCommit_number()
 									+ "\n Log size: " + state.getLog().size());
 						}
 					}
 					break;
+					
+				case GETSTATE:
+					System.out.println("GETSTATE received!");
+					
+					// only responds if in normal state and if the view_number of the message is equal to this replica's view_number
+					if(state.getStatus() == Status.NORMAL && msg.getView_number() == state.getView_number()){
+						ArrayList<Message> partialLog = (ArrayList<Message>)state.getLog().subList(msg.getOperation_number(), state.getLog().size());
+						Message newState = new Message(MessageType.NEWSTATE, state.getView_number(), partialLog,state.getOp_number(),state.getCommit_number());
+						try {
+							backUpServer.send(newState,  InetAddress.getByName(msg.getBackUp_Ip().split(":")[0]), Integer.parseInt(msg.getBackUp_Ip().split(":")[1]));
+						} catch (NumberFormatException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (UnknownHostException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}else
+						System.out.println("IGNORED GETSTATE!");
+					break;
 
+				case NEWSTATE:
+					System.out.println("NEWSTATE received!");
+					state.getLog().addAll(msg.getLog());
+					state.setView_number(msg.getView_number());
+					state.setOp_number(msg.getOperation_number());
+					state.setCommit_number(msg.getCommit_Number());
+					break;
 				default:
 					break;
 				}
