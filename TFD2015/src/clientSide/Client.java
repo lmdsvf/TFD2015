@@ -22,9 +22,11 @@ public class Client {
 	private int port;
 	private Network net;
 	private static final int SIZE = 300;
-
+	private int timeout;
+	
 	public Client(final String op) {
 		state = new ClientState();
+		System.out.println(state.getConfiguration());
 		readConfiguration();
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -47,7 +49,8 @@ public class Client {
 	private void readConfiguration() {
 		serverAddress = state.getConfiguration().get(0).split(":")[0];
 		port = Integer.parseInt(state.getProperties().getProperty("PClient"));
-		net = new Network(serverAddress, port);
+		net = new Network(serverAddress,port);
+		timeout = Integer.parseInt(state.getProperties().getProperty("T"));
 	}
 
 	public void execute(String op) {
@@ -55,33 +58,23 @@ public class Client {
 		state.request_number_increment();
 		Message msg = new Message(MessageType.REQUEST, op, state.getIpAddress(), state.getRequest_number());
 		try {
-			System.out.println("Vamos la: " + serverAddress + " e " + port);
 			net.send(msg, InetAddress.getByName(serverAddress), port);
-			DatagramPacket data = net.receive(10000);
+			DatagramPacket data = net.receive(timeout);
 
 			/***** Broadcast *****/
-			Network newNet = null;
 			if (data == null) {
-				for (String address : state.getConfiguration()) {
-					String ip = address.split(":")[0];
-
-					newNet = new Network(ip, port);
-					newNet.send(msg, InetAddress.getByName(ip), port);
-					data = newNet.receive(10000);
-
-					if (data != null) {
-						break;
-					}
-				}
+				System.out.println("Didn't receive response from primary...");
+				System.out.println("Broadcasting to all servers!");
+			//	net.broadcastToServers(msg, state.getConfiguration(), null, true);
 			}
-
+			
+			//data = net.receive(timeout);
 			Message reply = Network.networkToMessage(data);
-			state.request_number_increment();
 			if (state.getView_number() != reply.getView_number()) {
 				state.setView_number(reply.getView_number());
-				net = newNet;
+				//net = newNet;
 			}
-			System.out.println(reply.getResult());
+			System.out.println("RESULT: " + reply.getResult());
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}

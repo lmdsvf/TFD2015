@@ -25,7 +25,7 @@ import message.Message;
 public class Network {
 
 	private byte[] receivedData;
-	private final int BUFFERSIZE = 1024;
+	private final int BUFFERSIZE = 10024;
 	private InetAddress IPaddress;
 	private int port;
 	private DatagramSocket socket;
