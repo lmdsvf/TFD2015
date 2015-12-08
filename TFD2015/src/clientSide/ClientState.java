@@ -15,6 +15,7 @@ public class ClientState {
 	private String id;
 	private String ipAddress;
 	private ArrayList<String> configuration;
+	private ArrayList<String> configurationServers;
 	private int view_number = 0;
 	private int request_number = 0;
 	private Properties properties;
@@ -29,11 +30,16 @@ public class ClientState {
 			properties = new Properties();
 			properties.load(new FileReader("Configuration.txt"));
 			configuration = new ArrayList<String>();
+			configurationServers = new ArrayList<String>();
 			int NUMBEROFIPS = Integer.parseInt(properties
 					.getProperty("NumberOfIps"));
-			int clientBasePort = Integer.parseInt(properties.getProperty("PClient"));
+			int clientBasePort = Integer.parseInt(properties
+					.getProperty("PClient"));
 			for (int i = 0; i < NUMBEROFIPS; i++) {
-				configuration.add(properties.get("IP" + i).toString()+":"+ (clientBasePort +i));
+				configuration.add(properties.get("IP" + i).toString() + ":"
+						+ (clientBasePort + i));
+				configurationServers.add(properties.get("IP" + i).toString()
+						+ ":" + properties.getProperty("P" + i).toString());
 			}
 			configuration.sort(null);
 		} catch (UnknownHostException e) {
@@ -41,6 +47,14 @@ public class ClientState {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public ArrayList<String> getConfigurationServers() {
+		return configurationServers;
+	}
+
+	public void setConfigurationServers(ArrayList<String> configurationServers) {
+		this.configurationServers = configurationServers;
 	}
 
 	public String getId() {
