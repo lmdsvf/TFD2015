@@ -217,11 +217,8 @@ public class Server {
 							System.out.println("Operation Number received to high! Went to the Buffer!");
 							bufferForMessagesWithToHigherOpNumber.add(msg);
 							if(bufferForMessagesWithToHigherOpNumber.size() >= MAXBUFFERMESSAGES){
-								System.out.println("START STATE TRANSFER!!!!!");
-								if(stateTransfer()){
-									System.out.println("STATE TRANSFER COMPLETE!!!");
-								}else
-									System.out.println("STATE TRANSFER INCOMPLETE!!!");
+								stateTransfer();
+								bufferForMessagesWithToHigherOpNumber.clear();
 							}
 						} else if (msg.getOperation_number() == (state.getLog().size() + 1)) {
 							System.out.println("Operation Number expected!");
@@ -435,12 +432,10 @@ public class Server {
 					
 					// only responds if in normal state and if the view_number of the message is equal to this replica's view_number
 					if(state.getStatus() == Status.NORMAL && msg.getView_number() == state.getView_number()){
-						System.out.println("MyLogSize = " + state.getLog().size());
-						System.out.println("Message operation = " + msg.getOperation_number());
 						ArrayList<Message> partialLog = new ArrayList<Message>(state.getLog().subList(msg.getOperation_number(), state.getLog().size()));
 						Message newState = new Message(MessageType.NEWSTATE, state.getView_number(), partialLog,state.getOp_number(),state.getCommit_number());
 						try {
-							backUpServer.send(newState,  InetAddress.getByName(msg.getReplica().split(":")[0]), Integer.parseInt(msg.getReplica().split(":")[1]));
+							backUpServer.send(newState,  InetAddress.getByName(msg.getBackUp_Ip().split(":")[0]), Integer.parseInt(msg.getBackUp_Ip().split(":")[1]));
 						} catch (NumberFormatException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -451,9 +446,10 @@ public class Server {
 					}else
 						System.out.println("IGNORED GETSTATE!");
 					break;
-
+					
 				case NEWSTATE:
 					System.out.println("NEWSTATE received!");
+					System.out.println("LOG SIZE: " + msg.getLog().size());
 					state.getLog().addAll(msg.getLog());
 					state.setView_number(msg.getView_number());
 					state.setOp_number(msg.getOperation_number());
@@ -465,29 +461,16 @@ public class Server {
 
 			}
 
-			private boolean stateTransfer() {
+			private void stateTransfer() {
+				System.out.println("Initiate STATE TRANSFER!");
 				Message getState = new Message(MessageType.GETSTATE, state.getView_number(),state.getOp_number(),state.getUsingAddress());
-				//int intReplica = (int) (Math.random()*10 % state.getConfiguration().size());
-				//System.out.println("SELECTED REPLICA TO SEND GETSTATE: " + intReplica);
-				String address = state.getConfiguration().get(0);// TODO n é 0 aqui mas sim intReplica
+				int intReplica = (int) (Math.random()*10 % state.getConfiguration().size());
+				System.out.println("SELECTED REPLICA TO SEND GETSTATE: " + intReplica);
+				String address = state.getConfiguration().get(intReplica);
 				try {
 					backUpServer.send(getState, InetAddress.getByName(address.split(":")[0]), Integer.parseInt(address.split(":")[1]));
 				} catch (NumberFormatException | UnknownHostException e) {
 					e.printStackTrace();
-				}
-				
-				DatagramPacket data = backUpServer.receive(timeout);
-				if(data == null){
-					System.out.println("Replica nao respondeu");
-					return false;
-				}else{
-					System.out.println("NEWSTATE received!");
-					Message newState = Network.networkToMessage(data);
-					state.getLog().addAll(newState.getLog());
-					state.setView_number(newState.getView_number());
-					state.setOp_number(newState.getOperation_number());
-					state.setCommit_number(newState.getCommit_Number());
-					return true;
 				}
 			}
 

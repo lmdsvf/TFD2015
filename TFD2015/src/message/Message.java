@@ -19,7 +19,6 @@ public class Message implements Serializable {
 	private ArrayList<Message> log;
 	private int lastest_Normal_View_Change;
 	private double nounce;
-	private String replica;
 
 	// Commit Message
 	public Message(MessageType commit, int view_number, int commit_number) {
@@ -53,7 +52,7 @@ public class Message implements Serializable {
 		case GETSTATE:
 			this.view_number = i;
 			this.operation_number = i2;
-			this.replica = string;
+			this.backUp_Ip = string;
 			break;
 		default:
 			break;
@@ -127,6 +126,17 @@ public class Message implements Serializable {
 	// messages
 
 	// NewState is like StartView Message
+
+	/************** FINDING THE REQUEST NUMBER ***************/
+
+	public Message(MessageType ASKREQUESTNUMBER) {
+		this.type = ASKREQUESTNUMBER;
+	}
+
+	public Message(MessageType updateResquest, int realRequestNumber) {
+		this.type = updateResquest;
+		this.request_Number = realRequestNumber;
+	}
 
 	/********** GETTERS **********/
 
@@ -229,7 +239,4 @@ public class Message implements Serializable {
 
 	}
 
-	public String getReplica() {
-		return replica;
-	}
 }
