@@ -187,6 +187,22 @@ public class StartServicingClient extends Thread {
 					server.send(reply, clientIP, portDestination);
 				}
 				break;
+			case ASKREQUESTNUMBER:
+				Message update = new Message(MessageType.UPDATERESQUESTNUMBER,
+						0);
+				if (state.getClientTable().keySet().contains(clientId)) {
+					Tuple a = state.getClientTable().get(clientId);
+					update.setRequest_Number(a.getRequest_number());
+				}
+				try {
+					server.send(update,
+							InetAddress.getByName(clientId.split(":")[0]),
+							portDestination);
+				} catch (UnknownHostException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				break;
 			default:
 				break;
 			}

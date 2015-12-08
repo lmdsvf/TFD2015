@@ -33,13 +33,13 @@ public class Network {
 	private int timeoutViewChange;
 
 	// client constructor
-	public Network(String address, int port) {
+	public Network(String address, int port, int portMy) {
 		receivedData = new byte[BUFFERSIZE];
 		this.port = port;
 		getProperties();
 		try {
 			IPaddress = InetAddress.getByName(address);
-			socket = new DatagramSocket();
+			socket = new DatagramSocket(portMy);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (SocketException e) {
@@ -64,7 +64,8 @@ public class Network {
 		try {
 			p.load(new FileReader("Configuration.txt"));
 			this.timeout = Integer.parseInt(p.getProperty("T"));
-			this.timeoutViewChange = Integer.parseInt(p.getProperty("TViewChange"));
+			this.timeoutViewChange = Integer.parseInt(p
+					.getProperty("TViewChange"));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -76,16 +77,19 @@ public class Network {
 		return timeoutViewChange;
 	}
 
-	public void broadcastToServers(Message m, ArrayList<String> addresses, String usingAddress, boolean sendToMySelf) {
+	public void broadcastToServers(Message m, ArrayList<String> addresses,
+			String usingAddress, boolean sendToMySelf) {
 		try {
 			for (String address : addresses) {
 				if (sendToMySelf) {
 					String[] addr = address.split(":");
-					send(m, InetAddress.getByName(addr[0]), Integer.parseInt(addr[1]));
+					send(m, InetAddress.getByName(addr[0]),
+							Integer.parseInt(addr[1]));
 				} else {
 					if (!usingAddress.equals(address)) {
 						String[] addr = address.split(":");
-						send(m, InetAddress.getByName(addr[0]), Integer.parseInt(addr[1]));
+						send(m, InetAddress.getByName(addr[0]),
+								Integer.parseInt(addr[1]));
 					}
 
 				}
@@ -101,8 +105,10 @@ public class Network {
 			ObjectOutputStream os = new ObjectOutputStream(outputStream);
 			os.writeObject(data);
 			byte[] dataSend = outputStream.toByteArray();
-			DatagramPacket sendPacket = new DatagramPacket(dataSend, dataSend.length, ip, portDestination);
-			System.out.println("Sending to " + ip.getHostAddress() + ":" + portDestination);
+			DatagramPacket sendPacket = new DatagramPacket(dataSend,
+					dataSend.length, ip, portDestination);
+			System.out.println("Sending to " + ip.getHostAddress() + ":"
+					+ portDestination);
 			socket.send(sendPacket);
 			outputStream.close();
 			os.close();
@@ -113,7 +119,8 @@ public class Network {
 
 	public DatagramPacket receive(int timeout) {
 		System.out.println("\n\nReceiving data...");
-		DatagramPacket receivedPacket = new DatagramPacket(receivedData, receivedData.length);
+		DatagramPacket receivedPacket = new DatagramPacket(receivedData,
+				receivedData.length);
 		try {
 			socket.setSoTimeout(timeout);
 			socket.receive(receivedPacket);

@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 public class ClientState {
+	public void setRequest_number(int request_number) {
+		this.request_number = request_number;
+	}
+
 	private String id;
 	private String ipAddress;
 	private ArrayList<String> configuration;

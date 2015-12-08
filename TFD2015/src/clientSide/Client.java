@@ -26,11 +26,33 @@ public class Client {
 	private boolean isPrimaryChanged = false;
 	private int portWhenPrimaryFalse;
 	private DatagramPacket data;
+	private int myPort;
 
-	public Client(final String op) {
+	public Client(final String op, int myPort) {
 		state = new ClientState();
+		this.myPort = myPort;
 		System.out.println(state.getConfiguration());
 		readConfiguration();
+		System.out.println("O que tem: " + state.getIpAddress() + " - "
+				+ state.getId());
+		Message ask = new Message(MessageType.ASKREQUESTNUMBER);
+		try {
+			net.send(ask, InetAddress.getByName(serverAddress), port);
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		data = net.receive(timeout);
+		if (data != null) {
+			Message update = Network.networkToMessage(data);
+			if (update.getType().equals(MessageType.UPDATERESQUESTNUMBER)) {
+				System.out.println("Updating the Request Number... Value: "
+						+ update.getRequest_Number());
+				state.setRequest_number(update.getRequest_Number());
+			}
+			data = null;
+		}
+		System.out.println("REQUEST NUMBER: " + state.getRequest_number());
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(SIZE, SIZE);
@@ -43,7 +65,7 @@ public class Client {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				execute(op);
+				 execute(op);
 			}
 		});
 		frame.setVisible(true);
@@ -52,7 +74,7 @@ public class Client {
 	private void readConfiguration() {
 		serverAddress = state.getConfiguration().get(0).split(":")[0];
 		port = Integer.parseInt(state.getProperties().getProperty("PClient"));
-		net = new Network(serverAddress, port);
+		net = new Network(serverAddress, port, myPort);
 		timeout = Integer.parseInt(state.getProperties().getProperty("T"));
 	}
 
@@ -68,6 +90,7 @@ public class Client {
 			} else {
 				net.send(msg, InetAddress.getByName(serverAddress),
 						portWhenPrimaryFalse);
+				// net = new Network(serverAddress, portWhenPrimaryFalse);
 				System.out.println("Entrou no else");
 			}
 			data = net.receive(timeout);
@@ -85,11 +108,14 @@ public class Client {
 					System.err.println("Conteudo do msg: "
 							+ Network.networkToMessage(data).getBackUp_Ip()
 							+ " e agora na posição zero: "
-							+ state.getConfiguration().get(1));
-					portWhenPrimaryFalse = 4900 + state.getConfiguration()
-							.indexOf(
+							+ state.getConfiguration().get(1)
+							+ " WHATTT? "
+							+ state.getConfiguration().indexOf(
 									Network.networkToMessage(data)
-											.getBackUp_Ip());
+											.getBackUp_Ip()));
+					portWhenPrimaryFalse = (Integer
+							.parseInt(Network.networkToMessage(data)
+									.getBackUp_Ip().split(":")[1]) - 90);
 					System.out.println("Port changed to: "
 							+ portWhenPrimaryFalse);
 				}
@@ -100,7 +126,6 @@ public class Client {
 				Message reply = Network.networkToMessage(data);
 				if (state.getView_number() != reply.getView_number()) {
 					state.setView_number(reply.getView_number());
-					// net = newNet;
 				}
 				System.out.println("RESULT: " + reply.getResult());
 				data = null;
@@ -111,7 +136,7 @@ public class Client {
 	}
 
 	public static void main(String[] args) throws SocketException {
-		new Client("Echo Olá Mundo!");
+		new Client("Echo Olá Mundo!", Integer.parseInt(args[0]));
 		System.out.println("New Client Created!");
 
 	}
