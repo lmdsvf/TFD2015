@@ -23,7 +23,10 @@ public class Client {
 	private Network net;
 	private static final int SIZE = 300;
 	private int timeout;
-	
+	private boolean isPrimaryChanged = false;
+	private int portWhenPrimaryFalse;
+	private DatagramPacket data;
+
 	public Client(final String op) {
 		state = new ClientState();
 		System.out.println(state.getConfiguration());
@@ -49,32 +52,59 @@ public class Client {
 	private void readConfiguration() {
 		serverAddress = state.getConfiguration().get(0).split(":")[0];
 		port = Integer.parseInt(state.getProperties().getProperty("PClient"));
-		net = new Network(serverAddress,port);
+		net = new Network(serverAddress, port);
 		timeout = Integer.parseInt(state.getProperties().getProperty("T"));
 	}
 
 	public void execute(String op) {
 		state.setIpAddress(net.getLocalIP() + ":" + net.getLocalPort());
 		state.request_number_increment();
-		Message msg = new Message(MessageType.REQUEST, op, state.getIpAddress(), state.getRequest_number());
+		Message msg = new Message(MessageType.REQUEST, op,
+				state.getIpAddress(), state.getRequest_number());
 		try {
-			net.send(msg, InetAddress.getByName(serverAddress), port);
-			DatagramPacket data = net.receive(timeout);
-
+			if (!isPrimaryChanged) {
+				net.send(msg, InetAddress.getByName(serverAddress), port);
+				System.out.println("Entrou no if");
+			} else {
+				net.send(msg, InetAddress.getByName(serverAddress),
+						portWhenPrimaryFalse);
+				System.out.println("Entrou no else");
+			}
+			data = net.receive(timeout);
 			/***** Broadcast *****/
 			if (data == null) {
+				isPrimaryChanged = true;
 				System.out.println("Didn't receive response from primary...");
 				System.out.println("Broadcasting to all servers!");
-			//	net.broadcastToServers(msg, state.getConfiguration(), null, true);
+				net.broadcastToServers(msg, state.getConfiguration(), null,
+						true);
+				data = net.receive(timeout);
+				if (data != null) {
+					System.err.println("AHAH: "
+							+ Network.networkToMessage(data).getBackUp_Ip());
+					System.err.println("Conteudo do msg: "
+							+ Network.networkToMessage(data).getBackUp_Ip()
+							+ " e agora na posição zero: "
+							+ state.getConfiguration().get(1));
+					portWhenPrimaryFalse = 4900 + state.getConfiguration()
+							.indexOf(
+									Network.networkToMessage(data)
+											.getBackUp_Ip());
+					System.out.println("Port changed to: "
+							+ portWhenPrimaryFalse);
+				}
 			}
-			
-			//data = net.receive(timeout);
-			Message reply = Network.networkToMessage(data);
-			if (state.getView_number() != reply.getView_number()) {
-				state.setView_number(reply.getView_number());
-				//net = newNet;
+
+			// data = net.receive(timeout);
+			if (data != null) {
+				Message reply = Network.networkToMessage(data);
+				if (state.getView_number() != reply.getView_number()) {
+					state.setView_number(reply.getView_number());
+					// net = newNet;
+				}
+				System.out.println("RESULT: " + reply.getResult());
+				data = null;
 			}
-			System.out.println("RESULT: " + reply.getResult());
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
