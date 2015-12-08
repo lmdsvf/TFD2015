@@ -50,8 +50,27 @@ public class Client {
 						+ update.getRequest_Number());
 				state.setRequest_number(update.getRequest_Number());
 			}
-			data = null;
+		} else {
+			boolean isFinallyReceived = false;
+			while (!isFinallyReceived) {
+				net.broadcastToServers(ask, state.getConfiguration(), null,
+						true);
+				data = net.receive(timeout);
+				if (data != null) {
+					Message update = Network.networkToMessage(data);
+					if (update.getType().equals(
+							MessageType.UPDATERESQUESTNUMBER)) {
+						System.out
+								.println("Updating the Request Number... Value: "
+										+ update.getRequest_Number());
+						state.setRequest_number(update.getRequest_Number());
+						isFinallyReceived = true;
+						break;
+					}
+				}
+			}
 		}
+		data = null;
 		System.out.println("REQUEST NUMBER: " + state.getRequest_number());
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -65,7 +84,7 @@ public class Client {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				 execute(op);
+				execute(op);
 			}
 		});
 		frame.setVisible(true);
@@ -97,27 +116,35 @@ public class Client {
 			/***** Broadcast *****/
 			if (data == null) {
 				isPrimaryChanged = true;
-				System.out.println("Didn't receive response from primary...");
-				System.out.println("Broadcasting to all servers!");
-				net.broadcastToServers(msg, state.getConfiguration(), null,
-						true);
-				data = net.receive(timeout);
-				if (data != null) {
-					System.err.println("AHAH: "
-							+ Network.networkToMessage(data).getBackUp_Ip());
-					System.err.println("Conteudo do msg: "
-							+ Network.networkToMessage(data).getBackUp_Ip()
-							+ " e agora na posição zero: "
-							+ state.getConfiguration().get(1)
-							+ " WHATTT? "
-							+ state.getConfiguration().indexOf(
-									Network.networkToMessage(data)
-											.getBackUp_Ip()));
-					portWhenPrimaryFalse = (Integer
-							.parseInt(Network.networkToMessage(data)
-									.getBackUp_Ip().split(":")[1]) - 90);
-					System.out.println("Port changed to: "
-							+ portWhenPrimaryFalse);
+				boolean isFinallyReceived = false;
+				while (!isFinallyReceived) {
+					System.out
+							.println("Didn't receive response from primary...");
+					System.out.println("Broadcasting to all servers!");
+					net.broadcastToServers(msg, state.getConfiguration(), null,
+							true);
+					data = net.receive(timeout);
+					if (data != null) {
+						System.err
+								.println("AHAH: "
+										+ Network.networkToMessage(data)
+												.getBackUp_Ip());
+						System.err.println("Conteudo do msg: "
+								+ Network.networkToMessage(data).getBackUp_Ip()
+								+ " e agora na posição zero: "
+								+ state.getConfiguration().get(1)
+								+ " WHATTT? "
+								+ state.getConfiguration().indexOf(
+										Network.networkToMessage(data)
+												.getBackUp_Ip()));
+						portWhenPrimaryFalse = (Integer.parseInt(Network
+								.networkToMessage(data).getBackUp_Ip()
+								.split(":")[1]) - 90);
+						System.out.println("Port changed to: "
+								+ portWhenPrimaryFalse);
+						isFinallyReceived = true;
+						break;
+					}
 				}
 			}
 
