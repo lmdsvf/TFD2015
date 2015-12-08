@@ -24,9 +24,13 @@ public class Server {
 	private boolean isBackup = true;
 	private int timeout;
 	private int timeoutViewChange;
-
-	public Server(int port) {
+	private boolean testStateTransfer;
+	private int messagesBetweenCommits;
+	
+	public Server(int port, boolean testStateTransfer, int messagesBetweenCommits) {
 		this.port = port;
+		this.testStateTransfer = testStateTransfer;
+		this.messagesBetweenCommits = messagesBetweenCommits;
 		state = new ServerState(port);
 		properties = state.getProperties();
 		bufferForMessagesWithToHigherOpNumber = new ArrayList<Message>();
@@ -104,7 +108,7 @@ public class Server {
 			// primario
 			if (mod == state.getReplica_number()) {
 				isBackup = false;
-				new StartServicingClient(state, timeout).start();
+				new StartServicingClient(state, timeout, testStateTransfer, messagesBetweenCommits).start();
 				System.out.println("Primario esta Disponivel");
 			}
 
@@ -199,30 +203,36 @@ public class Server {
 				switch (msg.getType()) {
 				case PREPARE:
 					System.out.println("PREPARE received with Request message from client: " + msg.getClient_Message().getClient_Id());
-					if (!state.getClientTable().containsKey(msg.getClient_Message().getClient_Id())) {
-						state.getClientTable().put(msg.getClient_Message().getClient_Id(), new Tuple(INCIALOPNUMBERVALUEINTUPLE, INCIALRESULTVALUEINTUPLE));
-					}
-					if (msg.getOperation_number() > (state.getLog().size() + 1)) {
-						System.out.println("Operation Number recieved to high! Went to the Buffer!");
-						bufferForMessagesWithToHigherOpNumber.add(msg);
-					} else if (msg.getOperation_number() == (state.getLog().size() + 1)) {
-						System.out.println("Operation Number expected!");
-						state.op_number_increment();
-						state.getLog().add(this.msg.getClient_Message());
-						if (msg.getCommit_Number() == state.getCommit_number() + 1) {
-							state.setCommit_number(msg.getCommit_Number());
-							/* Ver depois isto */
-							state.getClientTable().get(msg.getClient_Message().getClient_Id()).setResult("result" + msg.getClient_Message().getRequest_Number());
-						} else if (msg.getCommit_Number() > state.getCommit_number() + 1) {
-							// Transfer State
-						}// Falar com o professor
-						Message messageOfClient = msg.getClient_Message();
-						state.getClientTable().get(messageOfClient.getClient_Id()).setRequest_number(messageOfClient.getRequest_Number());
-						state.getClientTable().get(messageOfClient.getClient_Id()).setResult("result" + messageOfClient.getRequest_Number());
-						Message prepareOk = new Message(MessageType.PREPARE_OK, state.getView_number(), state.getOp_number(), state.getUsingIp());
-						backUpServer.send(prepareOk, ipPrimary,
-								Integer.parseInt(properties.getProperty("PServer") + (state.getView_number() % Integer.parseInt(properties.getProperty("NumberOfIps")))));
-						DealingWithBuffer();
+					
+					// if this view_number is lower than the primary's then needs state transfer
+					if(msg.getView_number() > state.getView_number()){
+						System.out.println("NEEDS STATE TRANSFER!!!!!");
+					}else{
+						if (!state.getClientTable().containsKey(msg.getClient_Message().getClient_Id())) {
+							state.getClientTable().put(msg.getClient_Message().getClient_Id(), new Tuple(INCIALOPNUMBERVALUEINTUPLE, INCIALRESULTVALUEINTUPLE));
+						}
+						if (msg.getOperation_number() > (state.getLog().size() + 1)) {
+							System.out.println("Operation Number recieved to high! Went to the Buffer!");
+							bufferForMessagesWithToHigherOpNumber.add(msg);
+						} else if (msg.getOperation_number() == (state.getLog().size() + 1)) {
+							System.out.println("Operation Number expected!");
+							state.op_number_increment();
+							state.getLog().add(this.msg.getClient_Message());
+							if (msg.getCommit_Number() == state.getCommit_number() + 1) {
+								state.setCommit_number(msg.getCommit_Number());
+								/* Ver depois isto */
+								state.getClientTable().get(msg.getClient_Message().getClient_Id()).setResult("result" + msg.getClient_Message().getRequest_Number());
+							} else if (msg.getCommit_Number() > state.getCommit_number() + 1) {
+								// Transfer State
+							}// Falar com o professor
+							Message messageOfClient = msg.getClient_Message();
+							state.getClientTable().get(messageOfClient.getClient_Id()).setRequest_number(messageOfClient.getRequest_Number());
+							state.getClientTable().get(messageOfClient.getClient_Id()).setResult("result" + messageOfClient.getRequest_Number());
+							Message prepareOk = new Message(MessageType.PREPARE_OK, state.getView_number(), state.getOp_number(), state.getUsingIp());
+							backUpServer.send(prepareOk, ipPrimary,
+									Integer.parseInt(properties.getProperty("PServer") + (state.getView_number() % Integer.parseInt(properties.getProperty("NumberOfIps")))));
+							DealingWithBuffer();
+						}
 					}
 					break;
 				case COMMIT:
@@ -338,7 +348,7 @@ public class Server {
 							backUpServer.broadcastToServers(startView, state.getConfiguration(), state.getUsingIp(), false);
 
 							isBackup = false;
-							new StartServicingClient(state, timeout).start();
+							new StartServicingClient(state, timeout, testStateTransfer, messagesBetweenCommits).start();
 							System.out.println("Primario esta Disponivel");
 						}
 					}
@@ -473,13 +483,19 @@ public class Server {
 
 	public static void main(String[] args) {
 		int port = 0;
+		boolean testStateTransfer = false;
+		int messagesBetweenCommits = 0;
 		try {
 			port = Integer.parseInt(args[0]);
 		} catch (NumberFormatException e) {
 			System.out.println("The inserted port is not a valid one");
 			System.exit(-1);
 		}
-		new Server(port);
+		if(args.length == 2){
+			testStateTransfer = true;
+			messagesBetweenCommits = Integer.parseInt(args[1]);
+		}
+		new Server(port, testStateTransfer, messagesBetweenCommits);
 		System.out.println("New Server Created!");
 	}
 }
