@@ -33,7 +33,7 @@ public class Client {
 		this.myPort = myPort;
 		System.out.println(state.getConfiguration());
 		readConfiguration();
-		System.out.println("O que tem: " + state.getIpAddress() + " - "
+		System.out.println("O que tem: " + state.getIpAddress() + " -  "
 				+ state.getId());
 		Message ask = new Message(MessageType.ASKREQUESTNUMBER);
 		try {
