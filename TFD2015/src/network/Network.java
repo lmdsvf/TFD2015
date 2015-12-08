@@ -107,7 +107,7 @@ public class Network {
 			byte[] dataSend = outputStream.toByteArray();
 			DatagramPacket sendPacket = new DatagramPacket(dataSend,
 					dataSend.length, ip, portDestination);
-			System.out.println("Sending to " + ip.getHostAddress() + ":"
+			System.out.println("Sending " + data.getType() + " to " + ip.getHostAddress() + ":"
 					+ portDestination);
 			socket.send(sendPacket);
 			outputStream.close();
@@ -118,7 +118,7 @@ public class Network {
 	}
 
 	public DatagramPacket receive(int timeout) {
-		System.out.println("\n\nReceiving data...");
+		//System.out.println("\n\nReceiving data...");
 		DatagramPacket receivedPacket = new DatagramPacket(receivedData,
 				receivedData.length);
 		try {

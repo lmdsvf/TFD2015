@@ -34,13 +34,13 @@ public class ServerState {
 				configuration.add(properties.get("IP" + i).toString() + ":" + properties.getProperty("P" + i).toString());
 			}
 			configuration.sort(null);
-			System.out.println("Getting my ip!");
+			//System.out.println("Getting my ip!");
 			usingAddress = null;
 			for (String ip : configuration) {
 				for (String my_ip : Network.getAllIps()) {
-					System.out.println("Testing " + ip + " with " + my_ip);
+					//System.out.println("Testing " + ip + " with " + my_ip);
 					if (ip.equals(my_ip+":"+ port)) {
-						System.out.println("got it");
+						//System.out.println("got it");
 						usingAddress = ip;
 						break;
 					}
@@ -55,7 +55,7 @@ public class ServerState {
 				System.exit(-1);
 			}
 				
-			System.out.println("My ip: " + usingAddress);
+			//System.out.println("My ip: " + usingAddress);
 			replica_number = configuration.indexOf(usingAddress);
 			status = Status.NORMAL;
 			log = new ArrayList<Message>();

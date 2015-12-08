@@ -27,19 +27,9 @@ public class StartServicingClient extends Thread {
 
 	@Override
 	public void run() {
-		System.out.println(state.getReplica_number());
-		System.out.println(Integer.parseInt(state.getProperties().getProperty("PClient")));
-		System.out.println(Integer.parseInt(state.getProperties().getProperty("PClient")) + state.getReplica_number());
 		server = new Network(Integer.parseInt(state.getProperties().getProperty("PClient")) + state.getReplica_number());
-		System.out.println("ServerSocket activa");
 		serverToserver = new Network(Integer.parseInt(state.getProperties().getProperty("PServer") + state.getReplica_number()));
-		// /***** Quando o commit não é igual ao tamanho do log *****/
-		// if (state.getCommit_number() != state.getLog().size()) {
-		// for (int i = state.getCommit_number(); i < state.getLog().size();
-		// i++) {
-		// new DealWithClient(null);
-		// }
-		// }
+
 		while (true) { // espera q venha clients
 			System.out.println("Waiting for clients...");
 			DatagramPacket data = server.receive(timeout);
@@ -47,15 +37,16 @@ public class StartServicingClient extends Thread {
 				new DealWithClient(data).start();
 			} else {
 				/**** Checking ****/
-				System.err.println("Current Operation Number: " + state.getOp_number() + "\n Current Commit Number: " + state.getCommit_number() + " \n Current View Number: " + state.getView_number()
-						+ " \n Curent Log size: " + state.getLog().size());
+				System.err.println("Current Status:");
+				System.err.println("Operation Number: " + state.getOp_number() + "\nCommit Number: " + state.getCommit_number() + " \nView Number: "
+						+ state.getView_number() + " \nLog size: " + state.getLog().size());
 				int u = 0;
 				for (Message received : state.getLog()) {
 					System.err.println("Message " + u + ": " + received.getType() + " from Client:" + received.getClient_Id());
 					u++;
 				}
 				/********/
-				System.out.println("Sending keep_Alive Messages to backups!");
+				System.out.println("Sending COMMIT Messages to backups!");
 				Message commit = new Message(MessageType.COMMIT, state.getView_number(), state.getCommit_number());
 				server.broadcastToServers(commit, state.getConfiguration(), state.getUsingAddress(), false);
 
@@ -76,7 +67,6 @@ public class StartServicingClient extends Thread {
 			clientIP = data.getAddress();
 			portDestination = data.getPort();
 			clientId = clientIP.getHostAddress() + ":" + portDestination;
-			System.out.println("clientID: " + clientId);
 			this.msg = Network.networkToMessage(data);
 			this.msg.setClient_Id(clientId);
 			if (!state.getClientTable().containsKey(msg.getClient_Id())) {
@@ -90,10 +80,7 @@ public class StartServicingClient extends Thread {
 
 			switch (msg.getType()) {
 			case REQUEST:
-				System.out.println("Request Message received from client: " + msg.getClient_Id());
-				System.out.println("msg request number: " + msg.getRequest_Number());
-				System.out.println("server clientTable request number: " + state.getClientTable().get(clientId).getRequest_number());
-				System.out.println(msg.getRequest_Number() == (state.getClientTable().get(clientId).getRequest_number() + 1));
+				System.out.println("REQUEST Message received from client: " + msg.getClient_Id());
 				if (msg.getRequest_Number() == (state.getClientTable().get(clientId).getRequest_number() + 1)) {
 					int operationNumberOfTheMsg = msg.getOperation_number();
 					state.op_number_increment();
@@ -114,11 +101,10 @@ public class StartServicingClient extends Thread {
 							if (prepareOk == null) {
 								continue;
 							}
-							System.out.println("BackUp ip: " + prepareOk.getAddress());
 							Message newPrepareOk = Network.networkToMessage(prepareOk);
 							if (newPrepareOk.getType().equals(MessageType.PREPARE_OK) && newPrepareOk.getOperation_number() == operationNumberOfTheMsg
 									&& state.getConfiguration().contains(newPrepareOk.getBackUp_Ip()) && !usingIps.contains(newPrepareOk.getBackUp_Ip())) {
-								System.out.println("Prepare_Ok Message received from: " + newPrepareOk.getBackUp_Ip());
+								System.out.println("PREPARE_OK Message received from: " + newPrepareOk.getBackUp_Ip());
 								usingIps.add(newPrepareOk.getBackUp_Ip());
 								i++;
 							}

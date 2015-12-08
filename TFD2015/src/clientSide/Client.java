@@ -32,14 +32,11 @@ public class Client {
 		state = new ClientState();
 		this.myPort = myPort;
 		readConfiguration();
-		System.out
-				.println("Iniciation of the finding out the request number process of the client.");
+		System.out.println("Iniciation of the finding out the request number process of the client.");
 		Message ask = new Message(MessageType.ASKREQUESTNUMBER);
 		try {
 			net.send(ask, InetAddress.getByName(serverAddress), port);
-			System.out
-					.println("	1º: Message sended to the primary asking the current request number. The primary is: "
-							+ serverAddress + ":" + port);
+			System.out.println("	1º: Message sended to the primary asking the current request number. The primary is: " + serverAddress + ":" + port);
 		} catch (UnknownHostException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -49,26 +46,19 @@ public class Client {
 		if (data != null) {
 			Message update = Network.networkToMessage(data);
 			if (update.getType().equals(MessageType.UPDATERESQUESTNUMBER)) {
-				System.out
-						.println("		2.1: Positive message received and updating the Request Number with value: "
-								+ update.getRequest_Number());
+				System.out.println("		2.1: Positive message received and updating the Request Number with value: " + update.getRequest_Number());
 				state.setRequest_number(update.getRequest_Number());
 			}
 		} else {
-			System.out
-					.println("		2.2: Timeout occured, broadcastting for all machines known.");
+			System.out.println("		2.2: Timeout occured, broadcastting for all machines known.");
 			boolean isFinallyReceived = false;
 			while (!isFinallyReceived) {
-				net.broadcastToServers(ask, state.getConfiguration(), null,
-						true);
+				net.broadcastToServers(ask, state.getConfiguration(), null, true);
 				data = net.receive(timeout);
 				if (data != null) {
 					Message update = Network.networkToMessage(data);
-					if (update.getType().equals(
-							MessageType.UPDATERESQUESTNUMBER)) {
-						System.out
-								.println("			2.2.1: Finally a positive message received and updating the Request Number with value: "
-										+ update.getRequest_Number());
+					if (update.getType().equals(MessageType.UPDATERESQUESTNUMBER)) {
+						System.out.println("			2.2.1: Finally a positive message received and updating the Request Number with value: " + update.getRequest_Number());
 						state.setRequest_number(update.getRequest_Number());
 						isFinallyReceived = true;
 						break;
@@ -77,8 +67,7 @@ public class Client {
 			}
 		}
 		data = null;
-		System.out.println("	3º: Request number has a value of "
-				+ state.getRequest_number() + ".");
+		System.out.println("	3º: Request number has a value of " + state.getRequest_number() + ".");
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(SIZE, SIZE);
@@ -107,18 +96,13 @@ public class Client {
 	public void execute(String op) {
 		state.setIpAddress(net.getLocalIP() + ":" + net.getLocalPort());
 		state.request_number_increment();
-		Message msg = new Message(MessageType.REQUEST, op,
-				state.getIpAddress(), state.getRequest_number());
-		System.out.println("Sending a request with the number "
-				+ state.getRequest_number());
+		Message msg = new Message(MessageType.REQUEST, op, state.getIpAddress(), state.getRequest_number());
+		System.out.println("Sending a request with the number " + state.getRequest_number());
 		try {
 			if (!isPrimaryChanged) {
 				net.send(msg, InetAddress.getByName(serverAddress), port);
-				System.out.println("Entrou no if");
 			} else {
-				net.send(msg, InetAddress.getByName(serverAddress),
-						portWhenPrimaryFalse);
-				System.out.println("Entrou no else");
+				net.send(msg, InetAddress.getByName(serverAddress), portWhenPrimaryFalse);
 			}
 			data = net.receive(timeout);
 			/***** Broadcast *****/
@@ -126,18 +110,15 @@ public class Client {
 				isPrimaryChanged = true;
 				boolean isFinallyReceived = false;
 				while (!isFinallyReceived) {
-					System.out
-							.println("Didn't receive response from primary...");
+					System.out.println("Didn't receive response from primary...");
 					System.out.println("Broadcasting to all servers!");
-					net.broadcastToServers(msg, state.getConfiguration(), null,
-							true);
+					net.broadcastToServers(msg, state.getConfiguration(), null, true);
 					data = net.receive(timeout);
 					if (data != null) {
-						portWhenPrimaryFalse = 4900 + state
-								.getConfigurationServers().indexOf(
-										Network.networkToMessage(data)
-												.getBackUp_Ip());
+						serverAddress = state.getConfiguration().get(Network.networkToMessage(data).getView_number()% Integer.parseInt(state.getProperties().getProperty("NumberOfIps"))).split(":")[0];
+						portWhenPrimaryFalse = port + state.getConfigurationServers().indexOf(Network.networkToMessage(data).getBackUp_Ip());
 						isFinallyReceived = true;
+						//net = new Network(serverAddress,port, portWhenPrimaryFalse);
 						break;
 					}
 				}
@@ -147,8 +128,7 @@ public class Client {
 				if (state.getView_number() != reply.getView_number()) {
 					state.setView_number(reply.getView_number());
 				}
-				System.out.println("Result of the request: "
-						+ reply.getResult());
+				System.out.println("Result of the request: " + reply.getResult());
 				data = null;
 			}
 		} catch (UnknownHostException e) {

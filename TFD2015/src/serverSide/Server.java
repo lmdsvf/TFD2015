@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Properties;
 
 import message.Message;
@@ -15,8 +16,8 @@ import network.Network;
 
 public class Server {
 
-	private	final int MAXBUFFERMESSAGES = 5;
-	
+	private final int MAXBUFFERMESSAGES = 5;
+
 	private ServerState state;
 	private Properties properties;
 	private ArrayList<Message> bufferForMessagesWithToHigherOpNumber;
@@ -28,7 +29,7 @@ public class Server {
 	private int timeoutViewChange;
 	private boolean testStateTransfer;
 	private int messagesBetweenCommits;
-	
+
 	public Server(int port, boolean testStateTransfer, int messagesBetweenCommits) {
 		this.port = port;
 		this.testStateTransfer = testStateTransfer;
@@ -65,20 +66,17 @@ public class Server {
 		private double nounce;
 
 		private void recovery() {
+			System.out.println("Attempting recovery");
+			DatagramPacket data = null;
 			nounce = Math.random();
 			Message recovery = new Message(MessageType.RECOVERY, state.getUsingAddress(), nounce);
 			state.setStatus(Status.RECOVERING);
 			backUpServer.broadcastToServers(recovery, state.getConfiguration(), state.getUsingAddress(), false);
-		}
-
-		@Override
-		public void run() {
-			backUpServer = new Network(port);
-			DatagramPacket data = null;
-			recovery();
 			Message recoveryPrimary = null;
 			while (numberOfRecoveryResponseReceived < (faultsLimit + 1)) {
+				System.out.print("Waiting for Recovery Responses...");
 				data = backUpServer.receive(timeout);
+				System.out.println();
 				if (data == null) {
 					state.setStatus(Status.NORMAL);
 					break;
@@ -105,51 +103,59 @@ public class Server {
 				}
 			}
 
+			System.out.println("Recovery complete\n");
+		}
+
+		@Override
+		public void run() {
+			System.out.println("Initializing the Server\n");
+			backUpServer = new Network(port);
+			DatagramPacket data = null;
+
+			recovery();
+
 			int mod = state.getView_number() % state.getConfiguration().size();
 
 			// primario
 			if (mod == state.getReplica_number()) {
 				isBackup = false;
 				new StartServicingClient(state, timeout, testStateTransfer, messagesBetweenCommits).start();
-				System.out.println("Primario esta Disponivel");
-			}
+				System.out.println("Taking primary functions!");
+			} else
+				System.out.println("Taking backup functions!");
 
-			System.out.println("BackUp activo");
 			while (true) { // espera do contacto do primary
 				if (!waittingInViewChange)
 					System.out.println("Waiting for primary...");
 				else
 					System.out.println("Waiting for View Change Messages...");
 				if (isBackup) {
-					System.out.println("isbackup");
 					data = backUpServer.receive(timeoutViewChange);
 				} else {
-					System.out.println("is NOT backup");
 					data = backUpServer.receive(0);
 				}
-				// if (!isBackup)
-				// break;
+
 				if (data != null) // se nao fez timeout
 					new DealWithServers(data).start();
 				else {
 					/**** Checking ****/
-					System.err.println("Current Operation Number: " + state.getOp_number() + "\n Current Commit Number: " + state.getCommit_number() + " \n Current View Number: "
-							+ state.getView_number() + " \n Current Log size: " + state.getLog().size());
+					System.err.println("Current Status:");
+					System.err.println("Operation Number: " + state.getOp_number() + "\nCommit Number: " + state.getCommit_number() + " \nView Number: " + state.getView_number() + " \nLog size: "
+							+ state.getLog().size() + "\n");
 					int u = 0;
 					for (Message received : state.getLog()) {
 						System.err.println("Message " + u + ": " + received.getType() + " from Client:" + received.getClient_Id());
 						u++;
 					}
-					/**** View Changing! ****/
-					System.out.println("View Changing!");
-					// Aqui será o ViewChange
-					initialProcessForViewChange();
 
+					/**** View Changing! ****/
+					initialProcessForViewChange();
 				}
 			}
 		}
 
 		private void initialProcessForViewChange() {
+			System.out.println("Initializing View Change!");
 			state.setLastest_normal_view_change(state.getView_number());
 			state.view_number_increment();
 			state.setStatus(Status.VIEWCHANGE);
@@ -158,7 +164,6 @@ public class Server {
 		}
 
 		class DealWithServers extends Thread {
-			private static final int UNIQUE = 1;
 			private Message msg;
 			private InetAddress ipPrimary;
 
@@ -167,76 +172,43 @@ public class Server {
 				this.msg = Network.networkToMessage(data);
 			}
 
-			private void getNewLogAndViewNumber(ArrayList<Message> aux) {
-				int biggestViewNumber = 0;
-				ArrayList<Message> possibleLogs = new ArrayList<Message>();
-				for (Message m : aux) {
-					if (biggestViewNumber < m.getView_number()) {
-						biggestViewNumber = m.getView_number();
-					}
-				}
-				state.setView_number(biggestViewNumber);// Confirmar
-				for (Message m : aux) {
-					if (biggestViewNumber == m.getView_number()) {
-						possibleLogs.add(m);
-					}
-				}
-				if (possibleLogs.size() == UNIQUE) {
-					state.setLog(possibleLogs.get(0).getLog());
-					state.setCommit_number(possibleLogs.get(0).getCommit_Number());
-				} else {
-					int largestN = 0;
-					ArrayList<Message> possibleLogsWithOp_number = new ArrayList<Message>();
-					for (Message m : possibleLogs) {
-						if (m.getOperation_number() > largestN) {
-							largestN = m.getOperation_number();
-							possibleLogsWithOp_number.add(m);
-						}
-					}
-					state.setLog(possibleLogsWithOp_number.get(possibleLogsWithOp_number.size() - 1).getLog());
-
-					state.setCommit_number(possibleLogsWithOp_number.get(possibleLogsWithOp_number.size() - 1).getCommit_Number());
-				}
-				state.setOp_number(state.getLog().size());
-			}
-
 			@Override
 			public void run() {
 				switch (msg.getType()) {
 				case PREPARE:
 					System.out.println("PREPARE received with Request message from client: " + msg.getClient_Message().getClient_Id());
-					
-					// if this view_number is lower than the primary's then needs state transfer
-					if(msg.getView_number() > state.getView_number()){
-						System.out.println("NEEDS STATE TRANSFER!!!!!");
-					}else{
+
+					// if this view_number is lower than the primary's then
+					// needs state transfer
+					if (msg.getView_number() > state.getView_number()) {
+						stateTransfer();
+					} else {
 						if (!state.getClientTable().containsKey(msg.getClient_Message().getClient_Id())) {
 							state.getClientTable().put(msg.getClient_Message().getClient_Id(), new Tuple(INCIALOPNUMBERVALUEINTUPLE, INCIALRESULTVALUEINTUPLE));
 						}
 						if (msg.getOperation_number() > (state.getLog().size() + 1)) {
 							System.out.println("Operation Number received to high! Went to the Buffer!");
 							bufferForMessagesWithToHigherOpNumber.add(msg);
-							if(bufferForMessagesWithToHigherOpNumber.size() >= MAXBUFFERMESSAGES){
+							if (bufferForMessagesWithToHigherOpNumber.size() >= MAXBUFFERMESSAGES) {
 								stateTransfer();
 								bufferForMessagesWithToHigherOpNumber.clear();
 							}
 						} else if (msg.getOperation_number() == (state.getLog().size() + 1)) {
-							System.out.println("Operation Number expected!");
 							state.op_number_increment();
 							state.getLog().add(this.msg.getClient_Message());
 							if (msg.getCommit_Number() == state.getCommit_number() + 1) {
 								state.setCommit_number(msg.getCommit_Number());
-								/* Ver depois isto */
 								state.getClientTable().get(msg.getClient_Message().getClient_Id()).setResult("result" + msg.getClient_Message().getRequest_Number());
 							} else if (msg.getCommit_Number() > state.getCommit_number() + 1) {
 								// Transfer State
-							}// Falar com o professor
+							}
+
 							Message messageOfClient = msg.getClient_Message();
 							state.getClientTable().get(messageOfClient.getClient_Id()).setRequest_number(messageOfClient.getRequest_Number());
 							state.getClientTable().get(messageOfClient.getClient_Id()).setResult("result" + messageOfClient.getRequest_Number());
 							Message prepareOk = new Message(MessageType.PREPARE_OK, state.getView_number(), state.getOp_number(), state.getUsingIp());
 							backUpServer.send(prepareOk, ipPrimary,
-									Integer.parseInt(properties.getProperty("PServer") + (state.getView_number() % Integer.parseInt(properties.getProperty("NumberOfIps")))));
+									Integer.parseInt(properties.getProperty("PServer")) + (state.getView_number() % Integer.parseInt(properties.getProperty("NumberOfIps"))));
 							DealingWithBuffer();
 						}
 					}
@@ -250,8 +222,9 @@ public class Server {
 						// Transfer State
 					}
 					/**** Checking ****/
-					System.err.println("Current Operation Number: " + state.getOp_number() + "\n Current Commit Number: " + state.getCommit_number() + " \n Current View Number: "
-							+ state.getView_number() + " \n Curent Log size: " + state.getLog().size());
+					System.err.println("Current Status:");
+					System.err.println("Operation Number: " + state.getOp_number() + "\nCommit Number: " + state.getCommit_number() + " \nView Number: " + state.getView_number() + " \nLog size: "
+							+ state.getLog().size() + "\n");
 					int u = 0;
 					for (Message received : state.getLog()) {
 						System.err.println("Message " + u + ": " + received.getType() + " from Client:" + received.getClient_Id());
@@ -355,7 +328,7 @@ public class Server {
 
 							isBackup = false;
 							new StartServicingClient(state, timeout, testStateTransfer, messagesBetweenCommits).start();
-							System.out.println("Primario esta Disponivel");
+							System.out.println("Taking primary functions!");
 						}
 					}
 
@@ -364,17 +337,20 @@ public class Server {
 				case START_VIEW:
 					System.out.println("START_VIEW received from: " + msg.getBackUp_Ip());
 					state.setLog(msg.getLog());
-					if (msg.getLog().size() != 0)
-						state.setOp_number(msg.getLog().get(msg.getLog().size() - 1).getOperation_number());
-					else
+					if (msg.getLog().size() != 0) {
+						state.setOp_number(msg.getLog().size());
+					} else
 						state.setOp_number(0);
-					// TODO 
-					// OP NUMBER EM CASO DE TER LOG VAZIO...POE-SE O K???????????????
 					state.setView_number(msg.getView_number());
 					state.setStatus(Status.NORMAL);
-					// UPDATE CLIENT TABLE!!!
-					// CHECK IF THERE ARE NON-COMMITED OPERATIONS ON LOG
-
+					HashMap<String, Tuple> clientTable = state.getClientTable();
+					for (int i = state.getLog().size() - 1; i >= 0; i--) {
+						if (clientTable.keySet().contains(state.getLog().get(i).getClient_Id())) {
+							clientTable.get(state.getLog().get(i).getClient_Id()).setRequest_number(state.getLog().get(i).getRequest_Number());
+							clientTable.get(state.getLog().get(i).getClient_Id()).setResult("result" + (state.getLog().get(i).getRequest_Number()));
+						}
+					}
+					// UPDATE CLIENT TABLE!!! -> check!
 					break;
 
 				case RECOVERY:
@@ -407,8 +383,8 @@ public class Server {
 						System.out.println("RECOVERY_RESPONSE received! Now exists: " + numberOfRecoveryResponseReceived);
 
 						if (numberOfRecoveryResponseReceived >= faultsLimit + 1) {
-							System.out.println("Before: " + "\nViewNumber: " + state.getView_number() + "\n Op_number: " + state.getOp_number() + "\n CommitNumber: " + state.getCommit_number()
-									+ "\n Log size: " + state.getLog().size());
+							System.out.println("Before: " + "\nView_Number: " + state.getView_number() + "\nOp_number: " + state.getOp_number() + "\nCommit_Number: " + state.getCommit_number()
+									+ "\nLog size: " + state.getLog().size());
 							for (Message gettingInfo : numberOfRecoveryResponseMessagesReceived) {
 								if (gettingInfo.getLog() != null) {
 									state.setView_number(gettingInfo.getView_number());
@@ -421,21 +397,22 @@ public class Server {
 								}
 							}
 							System.out.println("Recovery process done!");
-							System.out.println("After: " + "\nViewNumber: " + state.getView_number() + "\n Op_number: " + state.getOp_number() + "\n CommitNumber: " + state.getCommit_number()
-									+ "\n Log size: " + state.getLog().size());
+							System.out.println("After: " + "\nView_Number: " + state.getView_number() + "\nOp_number: " + state.getOp_number() + "\nCommit_Number: " + state.getCommit_number()
+									+ "\nLog size: " + state.getLog().size());
 						}
 					}
 					break;
-					
+
 				case GETSTATE:
 					System.out.println("GETSTATE received!");
-					
-					// only responds if in normal state and if the view_number of the message is equal to this replica's view_number
-					if(state.getStatus() == Status.NORMAL && msg.getView_number() == state.getView_number()){
+
+					// only responds if in normal state and if the view_number
+					// of the message is equal to this replica's view_number
+					if (state.getStatus() == Status.NORMAL && msg.getView_number() == state.getView_number()) {
 						ArrayList<Message> partialLog = new ArrayList<Message>(state.getLog().subList(msg.getOperation_number(), state.getLog().size()));
-						Message newState = new Message(MessageType.NEWSTATE, state.getView_number(), partialLog,state.getOp_number(),state.getCommit_number());
+						Message newState = new Message(MessageType.NEWSTATE, state.getView_number(), partialLog, state.getOp_number(), state.getCommit_number());
 						try {
-							backUpServer.send(newState,  InetAddress.getByName(msg.getBackUp_Ip().split(":")[0]), Integer.parseInt(msg.getBackUp_Ip().split(":")[1]));
+							backUpServer.send(newState, InetAddress.getByName(msg.getBackUp_Ip().split(":")[0]), Integer.parseInt(msg.getBackUp_Ip().split(":")[1]));
 						} catch (NumberFormatException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -443,17 +420,17 @@ public class Server {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					}else
+					} else
 						System.out.println("IGNORED GETSTATE!");
 					break;
-					
+
 				case NEWSTATE:
 					System.out.println("NEWSTATE received!");
-					System.out.println("LOG SIZE: " + msg.getLog().size());
 					state.getLog().addAll(msg.getLog());
 					state.setView_number(msg.getView_number());
 					state.setOp_number(msg.getOperation_number());
 					state.setCommit_number(msg.getCommit_Number());
+					System.out.println("STATE TRANSFER complete");
 					break;
 				default:
 					break;
@@ -463,9 +440,9 @@ public class Server {
 
 			private void stateTransfer() {
 				System.out.println("Initiate STATE TRANSFER!");
-				Message getState = new Message(MessageType.GETSTATE, state.getView_number(),state.getOp_number(),state.getUsingAddress());
-				int intReplica = (int) (Math.random()*10 % state.getConfiguration().size());
-				System.out.println("SELECTED REPLICA TO SEND GETSTATE: " + intReplica);
+				Message getState = new Message(MessageType.GETSTATE, state.getView_number(), state.getOp_number(), state.getUsingAddress());
+				int intReplica = (int) (Math.random() * 10 % state.getConfiguration().size());
+				System.out.println("SELECTED REPLICA TO SEND GETSTATE: " + state.getConfiguration().get(intReplica));
 				String address = state.getConfiguration().get(intReplica);
 				try {
 					backUpServer.send(getState, InetAddress.getByName(address.split(":")[0]), Integer.parseInt(address.split(":")[1]));
@@ -478,17 +455,9 @@ public class Server {
 				ArrayList<Message> aux = new ArrayList<Message>();
 				for (Message m : bufferForMessagesWithToHigherOpNumber) {
 					if (m.getOperation_number() == state.getLog().size() + 1) {
-						Message prepareOk = new Message(MessageType.PREPARE_OK, state.getView_number(), state.getOp_number(), "");// Temos
-																																	// que
-																																	// ver
-						// isto melhor
+						Message prepareOk = new Message(MessageType.PREPARE_OK, state.getView_number(), state.getOp_number(), "");
 						backUpServer.send(prepareOk, ipPrimary,
-								Integer.parseInt(properties.getProperty("PServer") + (state.getView_number() % Integer.parseInt(properties.getProperty("NumberOfIps")))));// Pode
-						// haver
-						// um
-						// problema
-						// aqui!
-						// ipPrimary
+								Integer.parseInt(properties.getProperty("PServer")) + (state.getView_number() % Integer.parseInt(properties.getProperty("NumberOfIps"))));
 					} else {
 						aux.add(m);
 					}
@@ -511,11 +480,10 @@ public class Server {
 			System.out.println("The inserted port is not a valid one");
 			System.exit(-1);
 		}
-		if(args.length == 2){
+		if (args.length == 2) {
 			testStateTransfer = true;
 			messagesBetweenCommits = Integer.parseInt(args[1]);
 		}
 		new Server(port, testStateTransfer, messagesBetweenCommits);
-		System.out.println("New Server Created!");
 	}
 }
